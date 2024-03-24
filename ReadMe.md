@@ -8,6 +8,18 @@ The game is implemented three times in different Object Oriented Programming Lan
 - SmallTalk
 - Eiffel
 
+### JavaScript
+The first version of the game is implemented using JavaScript (ECMA-Script 2022) and HTML 5
+for the clients, and NodeJS for the server. To run the game run the following commands:
+
+```bash
+cd JS
+npm i
+node .
+```
+
+Then open a browser tab and navigate to `localhost:3000`.
+
 ## Group "P"
 This project is worked on by the following team members:
 
