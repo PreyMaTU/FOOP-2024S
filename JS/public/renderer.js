@@ -1,4 +1,35 @@
 
+export class SpriteSheet {
+  constructor( url ) {
+    this.url= url
+    this.image= null
+    this.bitmaps= new Map()
+  }
+
+  async load() {
+    if( !this.image ) {
+      return new Promise((res, rej) => {
+        this.image= new Image()
+        this.image.onload= () => res()
+        this.image.onerror= rej
+        this.image.src= this.url
+      })
+    }
+  }
+
+  async sprites( config ) {
+    for( const name in config ) {
+      const {x, y, w, h}= config[name]
+      const bitmap= await createImageBitmap( this.image, x, y, w, h )
+      this.bitmaps.set(name, bitmap)
+    }
+  }
+
+  get( name ) {
+    return this.bitmaps.get( name ) || null
+  }
+}
+
 /** The Renderer draws the game map elements on the canvas */
 export class Renderer {
   #canvas
@@ -101,5 +132,9 @@ export class Renderer {
     this.#context.beginPath()
     this.#context.rect(leftTopX, leftTopY, width, height)
     this.#completePath()
+  }
+
+  drawImage( image, posX, posY ) {
+    this.#context.drawImage( image, posX, posY )
   }
 }

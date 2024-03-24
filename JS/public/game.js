@@ -1,20 +1,34 @@
 
-import { Renderer } from './renderer.js'
+import { Renderer, SpriteSheet } from './renderer.js'
 import { Colors } from './colors.js'
+
+let mouse= null
 
 class Game {
   static create() {
+  static async create() {
     const gameCanvas= document.getElementById('game')
     gameCanvas.width= 320
     gameCanvas.height= 180
+
+    const spriteSheet= new SpriteSheet( '/sprites.png' )
+    await spriteSheet.load()
+
+    await spriteSheet.sprites({
+      tunnelPortal: {x: 0, y: 0, w: 20, h: 20 },
+      mouseStanding: {x: 21, y: 7, w: 16, h: 13}
+    })
+
+    mouse= spriteSheet.get('mouseStanding')
 
     const renderer= new Renderer( gameCanvas )
     return new Game( renderer )
   }
 
   /** @param {Renderer} renderer */
-  constructor( renderer ) {
+  constructor( renderer, spriteSheet ) {
     this.renderer= renderer
+    this.spriteSheet= spriteSheet
   }
 
   drawTopBar() {
@@ -40,19 +54,12 @@ class Game {
   loop() {
 
     this.renderer.drawBackground( '#aaa' )
-    this.renderer.strokeWeight= 3 
 
-    this.renderer.strokeColor= 'blue'
-    this.renderer.fillColor= 'red'
-    this.renderer.drawCircle( 50, 30, 10 )
-    this.renderer.drawCircle( 50, 60, 10 )
-    this.renderer.drawCircle( 50, 90, 10 )
-    this.renderer.drawCircle( 50, 120, 10 )
-
-    this.renderer.drawRectangle( 100, 100, 60, 60)
 
     this.drawTopBar()
     this.drawBottomBar()
+
+    this.renderer.drawImage( mouse, 40, 40 )
   }
 
   run() {
@@ -69,9 +76,9 @@ class Game {
 }
 
 
-function main() {
-  const game = Game.create()
-  game.run()
+async function main() {
+  await Game.create()
+  Game.the().run()
 }
 
 document.addEventListener('DOMContentLoaded', main)
