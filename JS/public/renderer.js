@@ -74,7 +74,7 @@ export class Renderer {
       this.#context.lineWidth = width
   }
   
-  background( color ) {
+  drawBackground( color ) {
     const oldFillStyle= this.#context.fillStyle
     this.#context.fillStyle= color
     this.#context.fillRect(0, 0, this.width, this.height)

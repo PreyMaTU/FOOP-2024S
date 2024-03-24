@@ -17,7 +17,7 @@ class Game {
 
   loop() {
 
-    this.renderer.background( '#aaa' )
+    this.renderer.drawBackground( '#aaa' )
 
     this.renderer.strokeColor= 'blue'
     this.renderer.fillColor= 'red'
