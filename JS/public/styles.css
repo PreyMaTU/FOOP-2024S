@@ -1,0 +1,10 @@
+
+body {
+  height: 100vh;
+}
+
+#game {
+  height: 90vh;
+  image-rendering: pixelated;
+}
+
