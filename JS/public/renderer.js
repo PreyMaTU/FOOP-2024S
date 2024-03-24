@@ -86,5 +86,10 @@ export class Renderer {
     this.#context.arc(centerX, centerY, radius, 0, 2 * Math.PI, false)
     this.#completePath()
   }
+
+  drawRectangle( leftTopX, leftTopY, width, height ) {
+    this.#context.beginPath()
+    this.#context.rect(leftTopX, leftTopY, width, height)
+    this.#completePath()
   }
 }
