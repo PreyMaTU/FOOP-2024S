@@ -35,7 +35,7 @@ class Hitbox {
 
   draw( renderer ) {
     renderer.pushState()
-    renderer.strokeWeight= 1
+    renderer.strokeWeight= 2
     renderer.strokeColor= 'red'
     renderer.noFill()
 
@@ -68,7 +68,7 @@ class TunnelPortal extends Entity {
   }
 
   get hitbox() {
-    return this.hitbox
+    return this.#hitbox
   }
 }
 
