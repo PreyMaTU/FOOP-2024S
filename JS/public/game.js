@@ -5,7 +5,8 @@ import { Colors } from './colors.js'
 let mouse= null
 
 class Game {
-  static create() {
+  static instance= null
+
   static async create() {
     const gameCanvas= document.getElementById('game')
     gameCanvas.width= 320
@@ -22,7 +23,15 @@ class Game {
     mouse= spriteSheet.get('mouseStanding')
 
     const renderer= new Renderer( gameCanvas )
-    return new Game( renderer )
+    Game.instance= new Game( renderer, spriteSheet )
+
+    await Game.instance.playfield.load()
+
+    return Game.instance
+  }
+
+  static the() {
+    return Game.instance;
   }
 
   /** @param {Renderer} renderer */
@@ -74,6 +83,8 @@ class Game {
     callback()
   }
 }
+
+window.Game= Game
 
 
 async function main() {
