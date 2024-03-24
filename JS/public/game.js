@@ -19,6 +19,7 @@ class Game {
 
   drawTopBar() {
     this.renderer.pushState()
+    this.renderer.noStroke()
     this.renderer.fillColor= Colors.Black
 
     this.renderer.drawRectangle( 0, 0, this.renderer.width, 15 );
@@ -28,6 +29,7 @@ class Game {
 
   drawBottomBar() {
     this.renderer.pushState()
+    this.renderer.noStroke()
     this.renderer.fillColor= Colors.Black
 
     this.renderer.drawRectangle( 0, this.renderer.height-15, this.renderer.width, 15 );

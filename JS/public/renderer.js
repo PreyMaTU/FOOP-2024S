@@ -71,7 +71,17 @@ export class Renderer {
   }
 
   set strokeWeight( width ) {
-      this.#context.lineWidth = width
+    this.#context.lineWidth = width
+  }
+
+  /** Disabled stroke by setting transparent color */
+  noStroke() {
+    this.#context.strokeStyle= '#0000'
+  }
+
+  /** Disabled fill by setting transparent color */
+  noFill() {
+    this.#context.fillStyle= '#0000'
   }
   
   drawBackground( color ) {
