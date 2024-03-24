@@ -1,6 +1,7 @@
 
 import { Renderer, SpriteSheet } from './renderer.js'
 import { Colors } from './colors.js'
+import { Playfield } from './playfield.js'
 
 let mouse= null
 
@@ -38,6 +39,7 @@ class Game {
   constructor( renderer, spriteSheet ) {
     this.renderer= renderer
     this.spriteSheet= spriteSheet
+    this.playfield= new Playfield()
   }
 
   drawTopBar() {
@@ -64,6 +66,7 @@ class Game {
 
     this.renderer.drawBackground( '#aaa' )
 
+    this.playfield.draw( this.renderer )
 
     this.drawTopBar()
     this.drawBottomBar()
