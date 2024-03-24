@@ -135,7 +135,7 @@ export class Renderer {
   }
 
   drawImage( image, posX, posY ) {
-    this.#context.drawImage( image, posX, posY )
+    this.#context.drawImage( image, Math.round(posX), Math.round(posY) )
   }
 
   drawPath( vertices ) {

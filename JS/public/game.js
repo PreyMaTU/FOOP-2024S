@@ -2,8 +2,7 @@
 import { Renderer, SpriteSheet } from './renderer.js'
 import { Colors } from './colors.js'
 import { Playfield } from './playfield.js'
-
-let mouse= null
+import { Keyboard } from './keyboard.js'
 
 class Game {
   static instance= null
@@ -18,17 +17,16 @@ class Game {
 
     await spriteSheet.sprites({
       tunnelPortal: {x: 0, y: 0, w: 20, h: 20 },
-      mouseStanding: {x: 21, y: 7, w: 16, h: 13}
+      mouseStanding: {x: 21, y: 7, w: 16, h: 13},
+      mouseRunning: { x: 40, y: 12, w: 26, h: 8}
     })
 
-    mouse= spriteSheet.get('mouseStanding')
-
     const renderer= new Renderer( gameCanvas )
-    Game.instance= new Game( renderer, spriteSheet )
+    const game= Game.instance= new Game( renderer, spriteSheet )
 
-    await Game.instance.playfield.load()
+    await game.playfield.load()
 
-    return Game.instance
+    return game
   }
 
   static the() {
@@ -40,6 +38,8 @@ class Game {
     this.renderer= renderer
     this.spriteSheet= spriteSheet
     this.playfield= new Playfield()
+    this.keyboard= new Keyboard()
+    this.lastTimestamp= 0
   }
 
   drawTopBar() {
@@ -62,7 +62,11 @@ class Game {
     this.renderer.popState()
   }
 
-  loop() {
+  loop( timeStamp ) {
+    const timeDelta= this.lastTimestamp > 0 ? timeStamp- this.lastTimestamp : 0
+    this.lastTimestamp= timeStamp
+    this.playfield.update( timeDelta )
+
     
     // Clear background with grey color to spot under-drawing
     this.renderer.drawBackground( '#aaa' )
@@ -71,13 +75,11 @@ class Game {
 
     this.drawTopBar()
     this.drawBottomBar()
-
-    this.renderer.drawImage( mouse, 40, 40 )
   }
 
   run() {
-    const callback= () => {
-      this.loop()
+    const callback= timeStamp => {
+      this.loop( timeStamp )
 
       // Tell browser which function to call for the next frame
       window.requestAnimationFrame( callback )

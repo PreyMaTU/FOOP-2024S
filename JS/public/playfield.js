@@ -33,6 +33,11 @@ class Hitbox {
     return true
   }
 
+  move( x, y ) {
+    this.x+= x
+    this.y+= y
+  }
+
   draw() {
     const renderer= Game.the().renderer
     renderer.pushState()
@@ -48,6 +53,7 @@ class Hitbox {
 
 class Entity {
   draw() { abstractMethod() }
+  update() {}
   get hitbox() { abstractMethod() }
 }
 
@@ -115,21 +121,79 @@ class Tunnel {
   }
 }
 
+const RunningDirection= {
+  Up: {},
+  Down: {},
+  Left: {},
+  Right: {}
+}
+
+class PlayerMouse extends Entity {
+  #hitbox
+  #standingSprite
+  #runningSprite
+  #runningDirection
+
+  constructor( posX, posY ) {
+    super()
+    this.#hitbox= new Hitbox( posX, posY, 13, 13 )
+    this.#standingSprite= Game.the().spriteSheet.get('mouseStanding')
+    this.#runningSprite= Game.the().spriteSheet.get('mouseRunning')
+    this.#runningDirection= null
+  }
+
+  update( timeDelta ) {
+    const movement= 30* timeDelta / 1000
+    const keyboard= Game.the().keyboard
+    if( keyboard.keyIsDown('w') ) {
+      this.#hitbox.move( 0, -movement )
+      this.#runningDirection= RunningDirection.Up
+
+    } else if( keyboard.keyIsDown('a') ) {
+      this.#hitbox.move( -movement, 0 )
+      this.#runningDirection= RunningDirection.Left
+
+    } else if( keyboard.keyIsDown('s') ) {
+      this.#hitbox.move( 0, movement )
+      this.#runningDirection= RunningDirection.Down
+
+    } else if( keyboard.keyIsDown('d') ) {
+      this.#hitbox.move( movement, 0 )
+      this.#runningDirection= RunningDirection.Right
+
+    } else {
+      this.#runningDirection= null
+    }
+  }
+
+  draw() {
+    const sprite= this.#runningDirection ? this.#runningSprite : this.#standingSprite
+    Game.the().renderer.drawImage( sprite, this.#hitbox.x, this.#hitbox.y )
+  }
+}
 
 export class Playfield {
   #cats
   #mice
   #tunnels
+  #player
 
   constructor() {
     this.#cats= []
     this.#mice= []
     this.#tunnels= []
+    this.#player= null
   }
 
   async load() {
     // TODO: Make an API call to the server to load the map data
     this.#tunnels= [ new Tunnel( 'red', [new TunnelPortal(60, 60), new TunnelPortal(100, 100)], new TunnelGeometry([[70, 70], [70, 110], [110, 110] ]) ) ]
+
+    this.#player= new PlayerMouse( 100, 100 )
+  }
+
+  update( timeDelta ) {
+    this.#player.update( timeDelta )
   }
 
   draw() {
@@ -144,6 +208,7 @@ export class Playfield {
 
 
     // Draw mice
+    this.#player.draw()
 
     // Draw cats
     
