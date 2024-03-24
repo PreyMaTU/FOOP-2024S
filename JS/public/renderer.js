@@ -137,4 +137,18 @@ export class Renderer {
   drawImage( image, posX, posY ) {
     this.#context.drawImage( image, posX, posY )
   }
+
+  drawPath( vertices ) {
+    this.#context.beginPath()
+
+    vertices.forEach( ([x, y], idx) => {
+      if( !idx ) {
+        this.#context.moveTo( x, y )        
+      } else {
+        this.#context.lineTo( x, y )
+      }
+    })
+
+    this.#completePath()
+  }
 }
