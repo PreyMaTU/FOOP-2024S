@@ -138,6 +138,12 @@ export class Renderer {
     this.#context.drawImage( image, Math.round(posX), Math.round(posY) )
   }
 
+  drawImageMirrored( image, posX, posY ) {
+    this.#context.scale(-1, 1)
+    this.#context.drawImage( image, -Math.round(posX)- image.width, Math.round(posY) )
+    this.#context.scale(-1, 1)
+  }
+
   drawPath( vertices ) {
     this.#context.beginPath()
 
