@@ -33,7 +33,8 @@ class Hitbox {
     return true
   }
 
-  draw( renderer ) {
+  draw() {
+    const renderer= Game.the().renderer
     renderer.pushState()
     renderer.strokeWeight= 2
     renderer.strokeColor= 'red'
@@ -46,7 +47,7 @@ class Hitbox {
 }
 
 class Entity {
-  draw( renderer ) { abstractMethod() }
+  draw() { abstractMethod() }
   get hitbox() { abstractMethod() }
 }
 
@@ -60,7 +61,8 @@ class TunnelPortal extends Entity {
     this.#sprite= Game.the().spriteSheet.get('tunnelPortal')
   }
 
-  draw( color, renderer ) {
+  draw( color ) {
+    const renderer= Game.the().renderer
     renderer.drawImage( this.#sprite, this.#hitbox.x, this.#hitbox.y )
     renderer.fillColor= color
     renderer.noStroke()
@@ -77,7 +79,8 @@ class TunnelGeometry {
     this.vertices= vertices
   }
 
-  draw( renderer, highlighted= false )  {
+  draw( highlighted= false )  {
+    const renderer= Game.the().renderer
     renderer.strokeColor= highlighted ? Colors.HighlightedTunnel : Colors.Tunnel
     renderer.strokeWeight= 14
     renderer.noFill()
@@ -95,15 +98,16 @@ class Tunnel {
     this.#geometry= geometry
   }
 
-  draw( renderer, onlyPortals ) {
+  draw( onlyPortals ) {
+    const renderer= Game.the().renderer
     renderer.pushState()
 
     if( !onlyPortals ) {
-      this.#geometry.draw( renderer )
+      this.#geometry.draw()
     }
 
     this.#portals.forEach( portal => {
-      portal.draw( this.color, renderer )
+      portal.draw( this.color )
       // portal.hitbox.draw()
     })
 
@@ -124,17 +128,19 @@ export class Playfield {
   }
 
   async load() {
+    // TODO: Make an API call to the server to load the map data
     this.#tunnels= [ new Tunnel( 'red', [new TunnelPortal(60, 60), new TunnelPortal(100, 100)], new TunnelGeometry([[70, 70], [70, 110], [110, 110] ]) ) ]
   }
 
-  draw( renderer ) {
+  draw() {
+    const renderer= Game.the().renderer
     renderer.pushState()
 
     renderer.fillColor= Colors.Grass
     renderer.drawRectangle(0, 15, renderer.width, renderer.height- 30 )
 
     // Draw tunnels
-    this.#tunnels.forEach( tunnel => tunnel.draw(renderer) )
+    this.#tunnels.forEach( tunnel => tunnel.draw() )
 
 
     // Draw mice

@@ -63,10 +63,11 @@ class Game {
   }
 
   loop() {
-
+    
+    // Clear background with grey color to spot under-drawing
     this.renderer.drawBackground( '#aaa' )
 
-    this.playfield.draw( this.renderer )
+    this.playfield.draw()
 
     this.drawTopBar()
     this.drawBottomBar()
@@ -82,7 +83,7 @@ class Game {
       window.requestAnimationFrame( callback )
     }
 
-    // Initial start of the draw loop
+    // Start the draw loop
     callback()
   }
 }
