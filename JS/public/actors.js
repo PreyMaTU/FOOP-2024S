@@ -52,6 +52,11 @@ export class Mouse extends Actor {
 
 export class PlayerMouse extends Mouse {
   update( timeDelta ) {
+    if( !Game.the().state.isPlayable() ) {
+      this.runningDirection= null
+      return
+    }
+
     const movement= 30* timeDelta / 1000
     const keyboard= Game.the().keyboard
     if( keyboard.keyIsDown('w') ) {

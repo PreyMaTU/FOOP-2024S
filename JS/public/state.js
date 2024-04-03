@@ -7,6 +7,8 @@ class State {
   is( kind ) {
     return this.constructor === kind
   }
+
+  isPlayable() { abstractMethod() }
 }
 
 class MenuState extends State {
@@ -43,7 +45,7 @@ class MenuState extends State {
     renderer.drawText( title, renderer.width / 2, y + 5)
     
     // Draw Menu Elements
-    renderer.fontSize= 12
+    renderer.fontSize= 10
     content.forEach( ({command, description}, idx) => {
       const posY= y + 30 + 20 * idx
 
@@ -60,11 +62,17 @@ class MenuState extends State {
   restorePreviousState() {
     Game.the().changeState( this.#previousState )
   }
+
+  isPlayable() { return false }
+}
+
+class PlayableState extends State {
+  isPlayable() { return true }
 }
 
 
 
-export class OutsideTunnel extends State {
+export class OutsideTunnel extends PlayableState {
   frame() {
     const game = Game.the()
     game.playfield.draw()
@@ -78,7 +86,7 @@ export class OutsideTunnel extends State {
   }
 }
 
-export class InsideTunnel extends State {
+export class InsideTunnel extends PlayableState {
 
 }
 
