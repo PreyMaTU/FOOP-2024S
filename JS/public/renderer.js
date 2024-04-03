@@ -40,8 +40,12 @@ export class Renderer {
     this.#canvas= canvas
     this.#context= this.#canvas.getContext('2d')
     
+    this.#context.font= '8px Consolas'
+    this.#context.textBaseline= 'top'
+    this.#context.textAlign= 'left'
+
     this.#createFilter( 'remove-alpha' )
-    this.#context.filter= 'url(#remove-alpha)'
+    this.enableFilter()
   }
 
   /** Creates a filter to disable aliasing, ensuring a pixelated look of objects */
@@ -62,6 +66,10 @@ export class Renderer {
       .appendChild( createSVGElement('filter', {id: filterId, x: 0, y: 0, width: '100%', height: '100%'}) )
       .appendChild( createSVGElement('feComponentTransfer') )
       .appendChild( createSVGElement('feFuncA', {type: 'discrete', tableValues: '0 1'}) )
+  }
+
+  enableFilter( enable= true ) {
+    this.#context.filter= enable ? 'url(#remove-alpha)' : 'none'
   }
 
   #completePath() {
@@ -92,7 +100,6 @@ export class Renderer {
     return this.#canvas.width
   }
   
-  // TODO: Implement setting doFill/doStroke to false 
   set fillColor( color ) {
     this.#context.fillStyle = color
   }
@@ -103,6 +110,14 @@ export class Renderer {
 
   set strokeWeight( width ) {
     this.#context.lineWidth = width
+  }
+
+  set fontSize( size ) {
+    this.#context.font= `${size}px Consolas`
+  }
+
+  set textAlign( align ) {
+    this.#context.textAlign= align
   }
 
   /** Disabled stroke by setting transparent color */
@@ -156,5 +171,9 @@ export class Renderer {
     })
 
     this.#completePath()
+  }
+
+  drawText( text, posX, posY ) {
+    this.#context.fillText( text, posX, posY )
   }
 }

@@ -3,6 +3,7 @@ import { Renderer, SpriteSheet } from './renderer.js'
 import { Colors } from './colors.js'
 import { Playfield } from './playfield.js'
 import { Keyboard } from './keyboard.js'
+import * as State from './state.js'
 
 class Game {
   static instance= null
@@ -41,7 +42,12 @@ class Game {
     this.spriteSheet= spriteSheet
     this.playfield= new Playfield()
     this.keyboard= new Keyboard()
+    this.state= new State.OutsideTunnel()
     this.lastTimestamp= 0
+  }
+
+  changeState( newState ) {
+    this.state= newState
   }
 
   drawTopBar() {
@@ -73,7 +79,7 @@ class Game {
     // Clear background with grey color to spot under-drawing
     this.renderer.drawBackground( '#aaa' )
 
-    this.playfield.draw()
+    this.state.frame()
 
     this.drawTopBar()
     this.drawBottomBar()
