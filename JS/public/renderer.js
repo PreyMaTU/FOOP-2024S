@@ -34,13 +34,15 @@ export class SpriteSheet {
 export class Renderer {
   #canvas
   #context
+  #fontFamily
 
   /** @param {HTMLCanvasElement} canvas */
-  constructor( canvas ) {
+  constructor( canvas, fontFamily = 'Consolas' ) {
     this.#canvas= canvas
     this.#context= this.#canvas.getContext('2d')
     
-    this.#context.font= '8px Consolas'
+    this.#fontFamily= fontFamily
+    this.#context.font= `8px ${this.#fontFamily}`
     this.#context.textBaseline= 'top'
     this.#context.textAlign= 'left'
 
@@ -113,7 +115,7 @@ export class Renderer {
   }
 
   set fontSize( size ) {
-    this.#context.font= `${size}px Consolas`
+    this.#context.font = `${size}px ${this.#fontFamily}`
   }
 
   set textAlign( align ) {

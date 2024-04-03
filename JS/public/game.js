@@ -24,7 +24,11 @@ class Game {
       catRunning: {x: 31, y: 21, w: 28, h: 22}
     })
 
-    const renderer= new Renderer( gameCanvas )
+    const font= new FontFace("pixelFont", "url(/fonts/slkscr.ttf)");
+    await font.load()
+    document.fonts.add(font)
+
+    const renderer= new Renderer( gameCanvas, font.family )
     const game= Game.instance= new Game( renderer, spriteSheet )
 
     await game.playfield.load()
