@@ -72,7 +72,7 @@ export class OutsideTunnel extends State {
     if( game.keyboard.keyIsDown('p') ) {
       game.changeState( new PauseMenu() )
 
-    } else if( game.keyboard.keyIsDown('Escape') ) {
+    } else if( game.keyboard.keyWasPressed('Escape') ) {
       game.changeState( new HelpMenu() )
     }
   }
@@ -87,6 +87,23 @@ export class VoteMenu extends MenuState {
 }
 
 export class HelpMenu extends MenuState {
+  frame() {
+    const game= Game.the()
+    game.playfield.draw()
+
+    this.drawMenuBox(200, 130, 'Controls', [
+      { command: 'W A S D', description: 'Movement' },
+      { command: 'Space', description: 'Enter/Exit Tunnel' },
+      { command: 'Esc', description: 'Open/Close Help' },
+      { command: 'Tab', description: 'Open/Close Vote' },
+      { command: 'P', description: 'Pause' }
+    ])
+
+
+    if( game.keyboard.keyWasPressed( 'Escape' ) ) {
+      this.restorePreviousState()
+    }
+  }
 }
 
 export class PauseMenu extends MenuState {
