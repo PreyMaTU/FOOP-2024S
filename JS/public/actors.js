@@ -75,6 +75,12 @@ export class PlayerMouse extends Mouse {
       this.hitbox.move( movement, 0 )
       this.runningDirection= RunningDirection.Right
 
+    } else if( keyboard.keyWasPressed(' ') ) { // Space Key
+      const currentTunnel = Game.the().playfield.tunnelInReachOfPlayer()
+      if( currentTunnel ) {
+        Game.the().state.changeToOpposite( currentTunnel )        
+      }
+
     } else {
       this.runningDirection= null
     }

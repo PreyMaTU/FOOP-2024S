@@ -47,6 +47,7 @@ class Game {
     this.playfield= new Playfield()
     this.keyboard= new Keyboard()
     this.state= new State.OutsideTunnel()
+    this.currentTunnel= null
     this.lastTimestamp= 0
   }
 
@@ -75,18 +76,20 @@ class Game {
   }
 
   loop( timeStamp ) {
+    // Run entity updates
     const timeDelta= this.lastTimestamp > 0 ? timeStamp- this.lastTimestamp : 0
     this.lastTimestamp= timeStamp
     this.playfield.update( timeDelta )
 
-    
+    // Draw entities
     // Clear background with grey color to spot under-drawing
     this.renderer.drawBackground( '#aaa' )
 
-    this.state.frame()
-
     this.drawTopBar()
     this.drawBottomBar()
+
+    // End frame
+    this.state.frame()
     this.keyboard.frame()
   }
 

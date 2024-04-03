@@ -68,6 +68,8 @@ class MenuState extends State {
 
 class PlayableState extends State {
   isPlayable() { return true }
+
+  changeToOpposite() { abstractMethod() }
 }
 
 
@@ -84,10 +86,33 @@ export class OutsideTunnel extends PlayableState {
       game.changeState( new HelpMenu() )
     }
   }
+
+  changeToOpposite( currentTunnel ) {
+    Game.the().currentTunnel= currentTunnel
+    Game.the().changeState( new InsideTunnel() )
+  }
 }
 
 export class InsideTunnel extends PlayableState {
+  frame() {
+    const game = Game.the()
+    game.playfield.draw()
 
+    if( game.keyboard.keyIsDown('p') ) {
+      game.changeState( new PauseMenu() )
+
+    } else if( game.keyboard.keyWasPressed('Escape') ) {
+      game.changeState( new HelpMenu() )
+      
+    } else if( game.keyboard.keyWasPressed('Tab') ) {
+      game.changeState( new VoteMenu() )
+    }
+  }
+
+  changeToOpposite() {
+    Game.the().currentTunnel= null
+    Game.the().changeState( new OutsideTunnel() )
+  }
 }
 
 export class VoteMenu extends MenuState {

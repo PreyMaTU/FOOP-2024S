@@ -65,6 +65,10 @@ class Tunnel {
 
     renderer.popState()
   }
+
+  hitboxOverlapsWithPortal( hitbox ) {
+    return this.#portals.some( portal => portal.hitbox.overlapsWith( hitbox ) )
+  }
 }
 
 export class Playfield {
@@ -101,7 +105,8 @@ export class Playfield {
     renderer.drawRectangle(0, 15, renderer.width, renderer.height- 30 )
 
     // Draw tunnels
-    this.#tunnels.forEach( tunnel => tunnel.draw() )
+    const tunnelOfPlayer= Game.the().currentTunnel
+    this.#tunnels.forEach( tunnel => tunnel.draw( tunnelOfPlayer !== tunnel ) )
 
 
     // Draw mice
@@ -111,5 +116,15 @@ export class Playfield {
     this.#cats.forEach( cat => cat.draw() )
     
     renderer.popState()
+  }
+
+  tunnelInReachOfPlayer() {
+    for( const tunnel of this.#tunnels ) {
+      if( tunnel.hitboxOverlapsWithPortal( this.#player.hitbox ) ) {
+        return tunnel
+      }
+    }
+
+    return null
   }
 }
