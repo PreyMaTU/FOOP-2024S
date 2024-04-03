@@ -83,6 +83,7 @@ class Game {
 
     this.drawTopBar()
     this.drawBottomBar()
+    this.keyboard.frame()
   }
 
   run() {
