@@ -1,7 +1,7 @@
 
 import { Colors } from './colors.js'
 import { Entity, Hitbox } from './entity.js'
-import { PlayerMouse } from './actors.js'
+import { PlayerMouse, Cat } from './actors.js'
 
 class TunnelPortal extends Entity {
   #sprite
@@ -85,6 +85,8 @@ export class Playfield {
     this.#tunnels= [ new Tunnel( 'red', [new TunnelPortal(60, 60), new TunnelPortal(100, 100)], new TunnelGeometry([[70, 70], [70, 110], [110, 110] ]) ) ]
 
     this.#player= new PlayerMouse( 100, 100 )
+
+    this.#cats= [ new Cat(30, 30), new Cat(300, 100) ]
   }
 
   update( timeDelta ) {
@@ -106,6 +108,7 @@ export class Playfield {
     this.#player.draw()
 
     // Draw cats
+    this.#cats.forEach( cat => cat.draw() )
     
     renderer.popState()
   }

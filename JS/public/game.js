@@ -18,7 +18,9 @@ class Game {
     await spriteSheet.sprites({
       tunnelPortal: {x: 0, y: 0, w: 20, h: 20 },
       mouseStanding: {x: 21, y: 7, w: 16, h: 13},
-      mouseRunning: { x: 40, y: 12, w: 26, h: 8}
+      mouseRunning: { x: 40, y: 12, w: 26, h: 8},
+      catSitting: {x: 0, y: 21, w: 22, h: 22},
+      catRunning: {x: 31, y: 21, w: 28, h: 22}
     })
 
     const renderer= new Renderer( gameCanvas )

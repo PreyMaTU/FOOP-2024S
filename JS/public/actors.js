@@ -45,6 +45,8 @@ export class Mouse extends Actor {
   constructor( posX, posY ) {
     super( posX, posY, 13, 13, 'mouseStanding', 'mouseRunning' );
   }
+
+  // TODO: Implement update
 }
 
 
@@ -72,4 +74,12 @@ export class PlayerMouse extends Mouse {
       this.runningDirection= null
     }
   }
+}
+
+export class Cat extends Actor {
+  constructor( posX, posY ) {
+    super( posX, posY, 22, 22, 'catSitting', 'catRunning' )
+  }
+
+  // TODO: implement update
 }
