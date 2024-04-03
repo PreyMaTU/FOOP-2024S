@@ -22,7 +22,7 @@ export class Hitbox {
     }
 
     // Hitboxes are on top of each other -> no overlap
-    if (this.y + this.h > other.y || other.y + other.h > this.y) {
+    if (this.y > other.y + other.h || other.y > this.y + this.h) {
       return false
     }
 
