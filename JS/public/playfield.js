@@ -100,12 +100,12 @@ export class Playfield {
   draw() {
     const renderer= Game.the().renderer
     renderer.pushState()
-
-    renderer.fillColor= Colors.Grass
+    
+    const tunnelOfPlayer= Game.the().currentTunnel
+    renderer.fillColor= tunnelOfPlayer ? Colors.GrassWhileUnderground : Colors.Grass
     renderer.drawRectangle(0, 15, renderer.width, renderer.height- 30 )
 
     // Draw tunnels
-    const tunnelOfPlayer= Game.the().currentTunnel
     this.#tunnels.forEach( tunnel => tunnel.draw( tunnelOfPlayer !== tunnel ) )
 
 
@@ -113,7 +113,9 @@ export class Playfield {
     this.#player.draw()
 
     // Draw cats
-    this.#cats.forEach( cat => cat.draw() )
+    if( !tunnelOfPlayer ) {
+      this.#cats.forEach( cat => cat.draw() )
+    }
     
     renderer.popState()
   }
