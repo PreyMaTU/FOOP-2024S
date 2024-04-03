@@ -1,61 +1,7 @@
 
 import { Colors } from './colors.js'
-
-function abstractMethod() {
-  throw Error('Abstract Method');
-}
-
-class Hitbox {
-  constructor(x, y, w, h) {
-    this.x= x
-    this.y= y
-    this.w= w
-    this.h= h
-  }
-
-  /** @param {Hitbox} other */
-  overlapsWith( other ) {
-    // Hitbox has no area -> no overlap
-    if( !this.w || !this.h || !other.w || !other.h ) {
-      return false
-    }
-
-    // Hitboxes to the left of each other -> no overlap
-    if(this.x > other.x+ other.w || other.x > this.x+ this.w) {
-      return false
-    }
-
-    // Hitboxes are on top of each other -> no overlap
-    if (this.y + this.h > other.y || other.y + other.h > this.y) {
-      return false
-    }
-
-    return true
-  }
-
-  move( x, y ) {
-    this.x+= x
-    this.y+= y
-  }
-
-  draw() {
-    const renderer= Game.the().renderer
-    renderer.pushState()
-    renderer.strokeWeight= 2
-    renderer.strokeColor= 'red'
-    renderer.noFill()
-
-    renderer.drawRectangle( this.x, this.y, this.w, this.h )
-
-    renderer.popState()
-  }
-}
-
-class Entity {
-  draw() { abstractMethod() }
-  update() {}
-  get hitbox() { abstractMethod() }
-}
+import { Entity, Hitbox } from './entity.js'
+import { PlayerMouse } from './actors.js'
 
 class TunnelPortal extends Entity {
   #sprite
@@ -118,62 +64,6 @@ class Tunnel {
     })
 
     renderer.popState()
-  }
-}
-
-const RunningDirection= {
-  Up: {},
-  Down: {},
-  Left: {},
-  Right: {}
-}
-
-class PlayerMouse extends Entity {
-  #hitbox
-  #standingSprite
-  #runningSprite
-  #runningDirection
-
-  constructor( posX, posY ) {
-    super()
-    this.#hitbox= new Hitbox( posX, posY, 13, 13 )
-    this.#standingSprite= Game.the().spriteSheet.get('mouseStanding')
-    this.#runningSprite= Game.the().spriteSheet.get('mouseRunning')
-    this.#runningDirection= null
-  }
-
-  update( timeDelta ) {
-    const movement= 30* timeDelta / 1000
-    const keyboard= Game.the().keyboard
-    if( keyboard.keyIsDown('w') ) {
-      this.#hitbox.move( 0, -movement )
-      this.#runningDirection= RunningDirection.Up
-
-    } else if( keyboard.keyIsDown('a') ) {
-      this.#hitbox.move( -movement, 0 )
-      this.#runningDirection= RunningDirection.Left
-
-    } else if( keyboard.keyIsDown('s') ) {
-      this.#hitbox.move( 0, movement )
-      this.#runningDirection= RunningDirection.Down
-
-    } else if( keyboard.keyIsDown('d') ) {
-      this.#hitbox.move( movement, 0 )
-      this.#runningDirection= RunningDirection.Right
-
-    } else {
-      this.#runningDirection= null
-    }
-  }
-
-  draw() {
-    const sprite= this.#runningDirection ? this.#runningSprite : this.#standingSprite
-    if( this.#runningDirection === RunningDirection.Right || this.#runningDirection === RunningDirection.Down ) {
-      Game.the().renderer.drawImageMirrored( sprite, this.#hitbox.x, this.#hitbox.y )
-
-    } else {
-      Game.the().renderer.drawImage( sprite, this.#hitbox.x, this.#hitbox.y )
-    }
   }
 }
 
