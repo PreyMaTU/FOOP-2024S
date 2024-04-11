@@ -9,6 +9,12 @@ export class Hitbox {
     this.h= h
   }
 
+  get centerX() { return this.x+ Math.floor(this.w/2) }
+  get centerY() { return this.y+ Math.floor(this.h/2) }
+
+  set centerX( x ) { return this.x= x - Math.floor(this.w/2) }
+  set centerY( y ) { return this.y= y - Math.floor(this.h/2) }
+
   /** @param {Hitbox} other */
   overlapsWith( other ) {
     // Hitbox has no area -> no overlap

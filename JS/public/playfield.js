@@ -2,6 +2,7 @@
 import { Colors } from './colors.js'
 import { Entity, Hitbox } from './entity.js'
 import { PlayerMouse, Cat } from './actors.js'
+import { Vector } from './util.js'
 
 class TunnelPortal extends Entity {
   #sprite
@@ -38,6 +39,42 @@ class TunnelGeometry {
     renderer.noFill()
     renderer.drawPath( this.vertices )
   }
+
+  clampPositionToNearestSegment( x, y ) {
+    const point= new Vector( x, y )
+
+    // Iterate over all line segments of the tunnel path and 
+    // calculate the closest point to each segment. Select
+    // the closest of the closest points
+    let closestDistanceSquared= Number.POSITIVE_INFINITY
+    let closestClampedPoint= null
+    for( let i= 0; i< this.vertices.length-1; i++ ) {
+      // Make a vector for the segment and one for the point with a common base
+      const segmentStart= new Vector( this.vertices[i] )
+      const segmentEnd= new Vector( this.vertices[i+1] )
+
+      const segment= segmentEnd.sub( segmentStart )
+      const direction= point.sub( segmentStart )
+    
+      // Calculate the scalar projection and clamp it between 0...1
+      // See: https://en.wikipedia.org/wiki/Scalar_projection
+      const t= Math.max(0, Math.min(1, 
+        direction.dot( segment ) / segment.lengthSquared()
+      ))
+      
+      // Calculate the projected closest point and its distance
+      const closestPointOnSegment= segmentStart.add( segment.scale( t ) )
+      const closestDistanceToSegmentSquared= point.sub( closestPointOnSegment ).lengthSquared()
+
+      // If the closest point has a lower distance, update the currently best one
+      if( closestDistanceToSegmentSquared < closestDistanceSquared ) {
+        closestDistanceSquared= closestDistanceToSegmentSquared
+        closestClampedPoint= closestPointOnSegment
+      }
+    }
+
+    return closestClampedPoint
+  }
 }
 
 class Tunnel {
@@ -68,6 +105,10 @@ class Tunnel {
 
   hitboxOverlapsWithPortal( hitbox ) {
     return this.#portals.some( portal => portal.hitbox.overlapsWith( hitbox ) )
+  }
+
+  clampPositionToNearestSegment( x, y ) {
+    return this.#geometry.clampPositionToNearestSegment( x, y )
   }
 }
 

@@ -84,6 +84,15 @@ export class PlayerMouse extends Mouse {
     } else {
       this.runningDirection= null
     }
+
+    // When we are moving inside a tunnel, we need to clamp the position
+    // to the tunnel walls
+    const currentTunnel= Game.the().currentTunnel
+    if( currentTunnel && this.runningDirection ) {
+      const {x, y}= currentTunnel.clampPositionToNearestSegment( this.hitbox.centerX, this.hitbox.centerY );
+      this.hitbox.centerX= x;
+      this.hitbox.centerY= y;
+    }
   }
 }
 
