@@ -89,10 +89,13 @@ export class PlayerMouse extends Mouse {
     // to the tunnel walls
     const currentTunnel= Game.the().currentTunnel
     if( currentTunnel && this.runningDirection ) {
-      const {x, y}= currentTunnel.clampPositionToNearestSegment( this.hitbox.centerX, this.hitbox.centerY );
+      const {x, y}= currentTunnel.clampPositionToNearestSegment( this.hitbox.centerX, this.hitbox.centerY )
       this.hitbox.centerX= x;
       this.hitbox.centerY= y;
     }
+
+    const fieldDimensions= Game.the().playfield.dimensions
+    this.hitbox.clampPosition( fieldDimensions.x, fieldDimensions.y, fieldDimensions.x+ fieldDimensions.w, fieldDimensions.y+ fieldDimensions.h )
   }
 }
 

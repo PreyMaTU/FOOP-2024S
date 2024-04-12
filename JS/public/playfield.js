@@ -125,6 +125,11 @@ export class Playfield {
     this.#player= null
   }
 
+  get dimensions() {
+    const renderer= Game.the().renderer
+    return {x: 0, y: 15, w: renderer.width, h: renderer.height- 30}
+  }
+
   async load() {
     // TODO: Make an API call to the server to load the map data
     this.#tunnels= [ new Tunnel( 'red', [new TunnelPortal(60, 60), new TunnelPortal(100, 100)], new TunnelGeometry([[70, 70], [70, 110], [110, 110] ]) ) ]
@@ -143,8 +148,9 @@ export class Playfield {
     renderer.pushState()
     
     const tunnelOfPlayer= Game.the().currentTunnel
+    const {x,y,w,h}= this.dimensions
     renderer.fillColor= tunnelOfPlayer ? Colors.GrassWhileUnderground : Colors.Grass
-    renderer.drawRectangle(0, 15, renderer.width, renderer.height- 30 )
+    renderer.drawRectangle( x, y, w, h )
 
     // Draw tunnels
     this.#tunnels.forEach( tunnel => tunnel.draw( tunnelOfPlayer !== tunnel ) )

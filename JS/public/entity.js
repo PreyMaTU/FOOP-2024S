@@ -35,6 +35,11 @@ export class Hitbox {
     return true
   }
 
+  clampPosition(minLeft, minTop, maxRight, maxBottom) {
+    this.x= Math.max( minLeft, Math.min(maxRight- this.w, this.x))
+    this.y= Math.max( minTop, Math.min(maxBottom- this.h, this.y))
+  }
+
   move( x, y ) {
     this.x+= x
     this.y+= y
