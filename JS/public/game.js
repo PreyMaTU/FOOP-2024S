@@ -4,6 +4,8 @@ import { Colors } from './colors.js'
 import { Playfield } from './playfield.js'
 import { Keyboard } from './keyboard.js'
 import * as State from './state.js'
+import { ServerConnection } from './connection.js'
+import { ClientProtocol } from './Protocol.js'
 
 class Game {
   static instance= null
@@ -28,8 +30,13 @@ class Game {
     await font.load()
     document.fonts.add(font)
 
+    const connection= new ServerConnection(`ws://${window.location.host}/socket`, new ClientProtocol())
+    await connection.open()
+    const playerId= await connection.waitForConnection()
+    console.log('Got player id from server:', playerId)
+
     const renderer= new Renderer( gameCanvas, font.family )
-    const game= Game.instance= new Game( renderer, spriteSheet )
+    const game= Game.instance= new Game( renderer, spriteSheet, playerId, connection )
 
     await game.playfield.load()
 
@@ -40,13 +47,20 @@ class Game {
     return Game.instance;
   }
 
-  /** @param {Renderer} renderer */
-  constructor( renderer, spriteSheet ) {
+  /** 
+   * @param {Renderer} renderer 
+   * @param {SpriteSheet} spriteSheet 
+   * @param {number} playerId 
+   * @param {ServerConnection} connection 
+   */
+  constructor( renderer, spriteSheet, playerId, connection ) {
     this.renderer= renderer
     this.spriteSheet= spriteSheet
     this.playfield= new Playfield()
     this.keyboard= new Keyboard()
     this.state= new State.OutsideTunnel()
+    this.playerId= playerId
+    this.connection= connection
     this.currentTunnel= null
     this.lastTimestamp= 0
   }
@@ -76,6 +90,9 @@ class Game {
   }
 
   loop( timeStamp ) {
+    // Handle server messages
+    this.connection.updateGameFromMessages()
+
     // Run entity updates
     const timeDelta= this.lastTimestamp > 0 ? timeStamp- this.lastTimestamp : 0
     this.lastTimestamp= timeStamp
@@ -91,6 +108,9 @@ class Game {
     // End frame
     this.state.frame()
     this.keyboard.frame()
+
+    // Send client messages
+    this.connection.frameSendMessagesAndToggleBuffer()
   }
 
   run() {
