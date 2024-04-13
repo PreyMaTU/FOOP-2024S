@@ -2,11 +2,18 @@ import { abstractMethod } from './util.js'
 
 export class Protocol {
   #sendBuffer
+  #state
+  #awaitedState
+  #pendingPromise
 
-  constructor() {
+  constructor( state ) {
+    this.#state= state
+    this.#awaitedState= null
+    this.#pendingPromise= null
     this.#sendBuffer= []
   }
 
+  get state() { return this.#state }
   set sendBuffer( buffer ) { this.#sendBuffer= buffer }
 
   _sendMessage( type, args= {} ) {
@@ -14,13 +21,34 @@ export class Protocol {
     this.#sendBuffer.push( JSON.stringify( args ) )
   }
 
+  async _waitForState( expectedState ) {
+    if( expectedState === this.#state ) {
+      return
+    }
+
+    if( this.#awaitedState ) {
+      throw new Error('Can only wait for one state at a time')
+    }
+
+    this.#awaitedState= expectedState
+    return new Promise( (res, rej) => this.#pendingPromise= {res, rej} )
+  }
+
+  _setState( newState, value ) {
+    if( newState === this.#awaitedState && this.#pendingPromise ) {
+      this.#pendingPromise.res( value )
+      this.#pendingPromise= null
+      this.#awaitedState= null
+    }
+
+    this.#state= newState
+  }
+
   sendHelloMessage() { abstractMethod() }
   handleIncomingMessage() { abstractMethod() }
 }
 
 export class ClientProtocol extends Protocol {
-  #state
-  #connectingPromise
   #id
 
   static State = {
@@ -29,10 +57,7 @@ export class ClientProtocol extends Protocol {
   }
 
   constructor() {
-    super()
-    
-    this.#state = ClientProtocol.State.Unconnected
-    this.#connectingPromise = null
+    super( ClientProtocol.State.Unconnected )
     this.#id= -1
   }
 
@@ -53,13 +78,8 @@ export class ClientProtocol extends Protocol {
       
     switch( msg.type ) {
       case 'hello':
-        this.#state = ClientProtocol.State.Connected
         this.#id= msg.id
-        
-        if (this.#connectingPromise) {
-          this.#connectingPromise.res( this.#id )
-          this.#connectingPromise = null
-        }
+        this._setState( ClientProtocol.State.Connected )
         break
         
       case 'mousePositions':  // [ id, x, y, movementDirection, alive? ]       
@@ -81,10 +101,7 @@ export class ClientProtocol extends Protocol {
   }
 
   async waitForConnection() {
-    if (this.#state === ClientProtocol.State.Connected) {
-      return this.#id
-    }
-
-    return new Promise((res, rej) => this.#connectingPromise = { res, rej })
+    await this._waitForState( ClientProtocol.State.Connected )
+    return this.#id
   }
 }

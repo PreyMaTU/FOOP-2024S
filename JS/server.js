@@ -8,19 +8,13 @@ class Position {
 }
 
 class ServerProtocol extends Protocol {
-  #state
-  #connectingPromise
-
   static State= {
     Unconnected: {name: 'unconnected'},
     Connected: {name: 'connected'}
   }
 
   constructor() {
-    super()
-    this.#state= ServerProtocol.State.Unconnected
-    this.#connectingPromise= null
-
+    super( ServerProtocol.State.Unconnected )
 
     this.id= -1
   }
@@ -41,11 +35,7 @@ class ServerProtocol extends Protocol {
     switch( msg.type ) {
       case 'hello':
         this.sendHelloMessage()
-        this.#state= ServerProtocol.State.Connected
-        if( this.#connectingPromise ) {
-          this.#connectingPromise.res()
-          this.#connectingPromise= null
-        }
+        this._setState( ServerProtocol.State.Connected )
         break
         
       default:
@@ -55,11 +45,7 @@ class ServerProtocol extends Protocol {
   }
 
   async waitForConnection() {
-    if( this.#state === ServerProtocol.State.Connected ) {
-      return
-    }
-
-    return new Promise((res, rej) => this.#connectingPromise= { res, rej })
+    await this._waitForState( ServerProtocol.State.Connected )
   }
 }
 
