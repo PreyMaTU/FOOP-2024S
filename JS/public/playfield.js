@@ -81,6 +81,14 @@ class Tunnel {
   #portals
   #geometry
 
+  static fromJsonData( data ) {
+    return new Tunnel(
+      data.color,
+      data.portals.map( portal => new TunnelPortal(portal.x, portal.y) ),
+      new TunnelGeometry( data.geometry )
+    )
+  }
+  
   constructor( color, portals, geometry) {
     this.color= color
     this.#portals= portals
@@ -131,12 +139,22 @@ export class Playfield {
   }
 
   async load() {
-    // TODO: Make an API call to the server to load the map data
-    this.#tunnels= [ new Tunnel( 'red', [new TunnelPortal(60, 60), new TunnelPortal(100, 100)], new TunnelGeometry([[70, 70], [70, 110], [110, 110] ]) ) ]
+    const response= await fetch('/map')
+    if( !response.ok ) {
+      console.error( 'Server did not respond with map data' )
+      return
+    }
+
+    const mapData= await response.json()
+
+    if( !mapData || !Array.isArray( mapData.tunnels ) ) {
+      console.error( 'Server sent invalid map data' )
+      return
+    }
+
+    this.#tunnels= mapData.tunnels.map( data => Tunnel.fromJsonData( data ) )
 
     this.#player= new PlayerMouse( 100, 100 )
-
-    this.#cats= [ new Cat(30, 30), new Cat(300, 100) ]
   }
 
   update( timeDelta ) {

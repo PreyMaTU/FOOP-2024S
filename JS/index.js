@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import express from 'express';
 import expressWs from 'express-ws'
 import { Server } from './server.js';
+import { playfieldMap } from './playfieldMap.js'
 
 dotenv.config()
 
@@ -12,6 +13,8 @@ expressWs( app )
 
 const server= new Server()
 app.ws('/socket', (ws, req) => server.playerJoined( ws ) )
+
+app.get('/map', (req, res) => res.send(playfieldMap) )
 
 const port= parseInt( process.env.PORT )
 app.listen(port, () => {
