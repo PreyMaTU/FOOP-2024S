@@ -32,7 +32,8 @@ export class Actor extends Entity {
   draw() {
     const sprite= this.#runningDirection ? this.#runningSprite : this.#standingSprite
     if( this.#runningDirection === RunningDirection.Right || this.#runningDirection === RunningDirection.Down ) {
-      Game.the().renderer.drawImageMirrored( sprite, this.#hitbox.x, this.#hitbox.y )
+      const drawingOffset= Math.max( 0, sprite.width - this.#hitbox.w )
+      Game.the().renderer.drawImageMirrored( sprite, this.#hitbox.x- drawingOffset, this.#hitbox.y )
 
     } else {
       Game.the().renderer.drawImage( sprite, this.#hitbox.x, this.#hitbox.y )
