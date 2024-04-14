@@ -20,6 +20,8 @@ class TunnelPortal extends Entity {
     renderer.fillColor= color
     renderer.noStroke()
     renderer.drawCircle( this.#hitbox.x+ this.#hitbox.w/2, this.#hitbox.y+ this.#hitbox.h/2, 3 )
+
+    this.drawHitboxIfEnabled()
   }
 
   get hitbox() {

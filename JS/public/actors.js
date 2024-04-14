@@ -38,6 +38,8 @@ export class Actor extends Entity {
     } else {
       Game.the().renderer.drawImage( sprite, this.#hitbox.x, this.#hitbox.y )
     }
+
+    this.drawHitboxIfEnabled()
   }
 }
 

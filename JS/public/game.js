@@ -63,6 +63,7 @@ class Game {
     this.connection= connection
     this.currentTunnel= null
     this.lastTimestamp= 0
+    this.showHitboxes= false
   }
 
   changeState( newState ) {
@@ -97,6 +98,11 @@ class Game {
     const timeDelta= this.lastTimestamp > 0 ? timeStamp- this.lastTimestamp : 0
     this.lastTimestamp= timeStamp
     this.playfield.update( timeDelta )
+
+    // Toggle hitbox drawing
+    if( this.keyboard.keyWasPressed('h') ) {
+      this.showHitboxes= !this.showHitboxes
+    }
 
     // Draw entities
     // Clear background with grey color to spot under-drawing

@@ -62,4 +62,10 @@ export class Entity {
   draw() { abstractMethod() }
   update() {}
   get hitbox() { abstractMethod() }
+
+  drawHitboxIfEnabled() {
+    if( Game.the().showHitboxes ) {
+      this.hitbox.draw()
+    }
+  }
 }
