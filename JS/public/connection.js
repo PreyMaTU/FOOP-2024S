@@ -103,7 +103,9 @@ export class ServerConnection {
 
   frameSendMessagesAndToggleBuffer() {
     // Send all messages in the send buffer and clear the send buffer
-    this.#sendBuffer.forEach( textMessage => this.#socket.send( textMessage ) )
+    if( this.#socket.readyState === 1 ) {
+      this.#sendBuffer.forEach( textMessage => this.#socket.send( textMessage ) )
+    }
     this.#sendBuffer.length= 0
 
     this.#receiver.swapReceiveBuffers()
