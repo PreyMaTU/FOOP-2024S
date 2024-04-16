@@ -1,10 +1,26 @@
 import { Entity, Hitbox } from './entity.js'
 
-export const RunningDirection= {
-  Up: { name: 'up' },
-  Down: { name: 'down' },
-  Left: { name: 'left' },
-  Right: { name: 'right' }
+export class RunningDirection {
+  static Up= new RunningDirection( 'up' )
+  static Down= new RunningDirection( 'down' )
+  static Left= new RunningDirection( 'left' )
+  static Right= new RunningDirection( 'right')
+
+  constructor( name ) {
+    this.name= name
+    Object.freeze( this )
+  }
+
+  static fromName( name ) {
+    for( const key in RunningDirection ) {
+      const value= RunningDirection[key]
+      if( key.toLowerCase() === name && value instanceof RunningDirection ) {
+        return value
+      }
+    }
+
+    return null
+  }
 }
 
 
@@ -44,12 +60,25 @@ export class Actor extends Entity {
 }
 
 
-export class Mouse extends Actor {
-  constructor( posX, posY ) {
+class Mouse extends Actor {
+  constructor( posX, posY, runningDirection= null, tunnel= null ) {
     super( posX, posY, 13, 13, 'mouseStanding', 'mouseRunning' );
+    this.runningDirection= runningDirection
+    this.tunnel= tunnel
+  }
+}
+
+export class MateMouse extends Mouse {
+  receivedMessage( mouse ) {
+    this.hitbox.x= mouse.x
+    this.hitbox.y= mouse.y
+    this.runningDirection= RunningDirection.fromName( mouse.runningDirection ),
+    this.tunnel= Game.the().playfield.tunnelByColor( mouse.tunnel )
   }
 
-  // TODO: Implement update
+  update() {
+
+  }
 }
 
 
@@ -81,7 +110,8 @@ export class PlayerMouse extends Mouse {
     } else if( keyboard.keyWasPressed(' ') ) { // Space Key
       const currentTunnel = Game.the().playfield.tunnelInReachOfPlayer()
       if( currentTunnel ) {
-        Game.the().state.changeToOpposite( currentTunnel )        
+        Game.the().state.changeToOpposite( currentTunnel )
+        this.tunnel= Game.the().currentTunnel
       }
 
     } else {
@@ -90,9 +120,8 @@ export class PlayerMouse extends Mouse {
 
     // When we are moving inside a tunnel, we need to clamp the position
     // to the tunnel walls
-    const currentTunnel= Game.the().currentTunnel
-    if( currentTunnel && this.runningDirection ) {
-      const {x, y}= currentTunnel.clampPositionToNearestSegment( this.hitbox.centerX, this.hitbox.centerY )
+    if( this.tunnel && this.runningDirection ) {
+      const {x, y}= this.tunnel.clampPositionToNearestSegment( this.hitbox.centerX, this.hitbox.centerY )
       this.hitbox.centerX= x;
       this.hitbox.centerY= y;
     }

@@ -82,10 +82,8 @@ export class ClientProtocol extends Protocol {
         this._setState( ClientProtocol.State.Connected )
         break
         
-      case 'mousePositions':  // [ id, x, y, movementDirection, alive? ]       
-        break
-        
-      case 'catPositions':    // [ id, x, y, movementDirection ]
+      case 'entities':        // mice: [ id, x, y, movementDirection, alive? ], cats: [ id, x, y, movementDirection ]
+        Game.the()?.playfield.receivedEntitiesMessage( msg.mice, msg.cats )
         break
         
       case 'votes':           // tunnel id: { red: number, green: number, ... }, tunnel id: ....

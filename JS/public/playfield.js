@@ -1,7 +1,7 @@
 
 import { Colors } from './colors.js'
 import { Entity, Hitbox } from './entity.js'
-import { PlayerMouse, Cat } from './actors.js'
+import { PlayerMouse, Cat, MateMouse } from './actors.js'
 import { Vector } from './util.js'
 
 class TunnelPortal extends Entity {
@@ -129,8 +129,8 @@ export class Playfield {
   #player
 
   constructor() {
-    this.#cats= []
-    this.#mice= []
+    this.#cats= new Map()
+    this.#mice= new Map()
     this.#tunnels= []
     this.#player= null
   }
@@ -167,7 +167,7 @@ export class Playfield {
     const renderer= Game.the().renderer
     renderer.pushState()
     
-    const tunnelOfPlayer= Game.the().currentTunnel
+    const tunnelOfPlayer= this.#player.tunnel
     const {x,y,w,h}= this.dimensions
     renderer.fillColor= tunnelOfPlayer ? Colors.GrassWhileUnderground : Colors.Grass
     renderer.drawRectangle( x, y, w, h )
@@ -177,6 +177,11 @@ export class Playfield {
 
 
     // Draw mice
+    this.#mice.forEach( mouse => {
+      if( mouse.tunnel === tunnelOfPlayer ) {
+        mouse.draw()
+      }
+    })
     this.#player.draw()
 
     // Draw cats
@@ -188,13 +193,11 @@ export class Playfield {
   }
 
   tunnelInReachOfPlayer() {
-    for( const tunnel of this.#tunnels ) {
-      if( tunnel.hitboxOverlapsWithPortal( this.#player.hitbox ) ) {
-        return tunnel
-      }
-    }
+    return this.#tunnels.find( tunnel => tunnel.hitboxOverlapsWithPortal( this.#player.hitbox ) ) || null
+  }
 
-    return null
+  tunnelByColor( color ) {
+    return this.#tunnels.find( tunnel => tunnel.color === color ) || null
   }
 
   sendNetworkPackets() {
@@ -204,5 +207,34 @@ export class Playfield {
 
     const playerHitbox= this.#player.hitbox
     protocol.sendPlayerUpdate( playerHitbox.x, playerHitbox.y, tunnelColor, voteColor )
+  }
+
+  receivedEntitiesMessage( mice, cats ) {
+    // this.#cats= cats.map( cat => Cat.fromJsonData(cat) )
+
+    mice.forEach( mouse => {
+      if( mouse.id === Game.the().playerId ) {
+        // Update player things: alive?
+        return
+      }
+
+      // Get or create entity
+      let entity= this.#mice.get( mouse.id )
+      if( !entity ) {
+        this.#mice.set( mouse.id, entity= new MateMouse(100, 100) )
+      }
+
+      entity.receivedMessage( mouse )
+    })
+
+    // There are less mice in the data packet than on the play field
+    // -> find the stale entity and delete it
+    if( mice.length !== this.#mice.size+ 1 ) {
+      for( const id of this.#mice.keys() ) {
+        if( !mice.some( mouse => mouse.id === id ) ) {
+          this.#mice.delete( id )
+        }
+      }
+    }
   }
 }

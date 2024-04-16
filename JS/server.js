@@ -1,4 +1,4 @@
-import { Protocol } from "./public/Protocol.js"
+import { ClientProtocol, Protocol } from "./public/Protocol.js"
 import { RunningDirection } from "./public/actors.js"
 
 class Position {
@@ -50,7 +50,7 @@ class ServerProtocol extends Protocol {
   }
 
   sendHelloMessage() {
-    this._sendMessage( 'hello', { id: this.id } )
+    this._sendMessage( 'hello', { id: this.#id } )
   }
 
   handleIncomingMessage( textMessage ) {
@@ -83,6 +83,10 @@ class ServerProtocol extends Protocol {
   async waitForConnection() {
     await this._waitForState( ServerProtocol.State.Connected )
   }
+
+  static broadcastEntityUpdates( connections, mice, cats ) {
+    connections.forEach( connection => connection.protocol._sendMessage('entities', {mice, cats}) )
+  }
 }
 
 class ClientConnection {
@@ -103,6 +107,8 @@ class ClientConnection {
     this.onClose= null
   }
 
+  get protocol() { return this.#protocol }
+
   #onWebsocketClosed() {
     console.log('Websocket closed')
     if( this.onClose ) {
@@ -110,11 +116,9 @@ class ClientConnection {
     }
   }
 
-  sendMessages( broadcastMessages= [] ) {
+  sendMessages() {
     this.#sendBuffer.forEach( textMessage => this.#socket.send( textMessage ) )
     this.#sendBuffer.length= 0
-
-    broadcastMessages.forEach( textMessage => this.#socket.send( textMessage ) )
   }
 
   setPlayer( player ) {
@@ -172,10 +176,21 @@ class Player extends ServerEntity {
 
   update( position, tunnelColor, voteColor ) {
     this.position= position
-    this.#tunnel= tunnelColor
-    this.#vote= voteColor
+    this.#tunnel= tunnelColor || null
+    this.#vote= voteColor || null
 
     console.log(`Player update:`, this.runningDirection)
+  }
+
+  makePacket() {
+    return {
+      id: this.id,
+      x: this.position.x,
+      y: this.position.y,
+      runningDirection: this.runningDirection?.name || null,
+      tunnel: this.#tunnel,
+      alive: this.#alive
+    }
   }
 }
 
@@ -229,9 +244,12 @@ export class Server {
   }
 
   update() {
-    const broadcastMessages= []
+    const miceData= []
+    const catsData= []
 
+    this.#players.forEach( player => miceData.push( player.makePacket() ) )
 
-    this.#connections.forEach( connection => connection.sendMessages( broadcastMessages ) )
+    ServerProtocol.broadcastEntityUpdates( this.#connections, miceData, catsData )
+    this.#connections.forEach( connection => connection.sendMessages() )
   }
 }
