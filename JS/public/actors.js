@@ -1,4 +1,4 @@
-import { Entity, Hitbox } from './entity.js'
+import { Entity, Hitbox, LinearSteerer } from './entity.js'
 
 export class RunningDirection {
   static Up= new RunningDirection( 'up' )
@@ -61,23 +61,27 @@ export class Actor extends Entity {
 
 
 class Mouse extends Actor {
-  constructor( posX, posY, runningDirection= null, tunnel= null ) {
+  constructor( posX, posY ) {
     super( posX, posY, 13, 13, 'mouseStanding', 'mouseRunning' );
-    this.runningDirection= runningDirection
-    this.tunnel= tunnel
+    this.runningDirection= null
+    this.tunnel= null
   }
 }
 
 export class MateMouse extends Mouse {
+  constructor( posX, posY ) {
+    super( posX, posY )
+    this.steerer= new LinearSteerer( 30/1000 )
+  }
+
   receivedMessage( mouse ) {
-    this.hitbox.x= mouse.x
-    this.hitbox.y= mouse.y
+    this.steerer.setTarget( this.hitbox, mouse.x, mouse.y )
     this.runningDirection= RunningDirection.fromName( mouse.runningDirection ),
     this.tunnel= Game.the().playfield.tunnelByColor( mouse.tunnel )
   }
 
-  update() {
-
+  update( timeDelta ) {
+    this.steerer.updateHitbox( this.hitbox, timeDelta )
   }
 }
 

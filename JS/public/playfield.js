@@ -161,6 +161,7 @@ export class Playfield {
 
   update( timeDelta ) {
     this.#player.update( timeDelta )
+    this.#mice.forEach( mouse => mouse.update( timeDelta ) )
   }
 
   draw() {

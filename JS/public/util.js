@@ -41,4 +41,9 @@ export class Vector {
   distanceToSquared( other ) {
     return this.sub( other ).lengthSquared()
   }
+
+  unit() {
+    const length= this.length()
+    return new Vector( this.x / length, this.y / length )
+  }
 }

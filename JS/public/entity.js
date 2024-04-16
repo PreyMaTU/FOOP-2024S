@@ -1,5 +1,5 @@
 
-import { abstractMethod } from './util.js'
+import { abstractMethod, Vector } from './util.js'
 
 export class Hitbox {
   constructor(x, y, w, h) {
@@ -55,6 +55,48 @@ export class Hitbox {
     renderer.drawRectangle( this.x, this.y, this.w, this.h )
 
     renderer.popState()
+  }
+}
+
+export class LinearSteerer {
+  #speed
+  #target
+
+  constructor( speed ) {
+    this.#speed= speed
+    this.#target= null
+  }
+
+  setTarget( hitbox, x, y ) {
+    // Do not set a target when the hitbox already reached the target
+    if( hitbox.x === x && hitbox.y === y ) {
+      this.#target= null
+      return
+    }
+
+    this.#target= new Vector( x, y )
+  }
+
+  updateHitbox( hitbox, timeDelta ) {
+    if( !this.#target ) {
+      return
+    }
+
+    // Calculate the full vector and scaled movement vector
+    const vec= this.#target.sub( new Vector( hitbox.x, hitbox.y ) )
+    const movement= this.#speed * timeDelta
+
+    // Only use the movement vector if we do not overshoot the target
+    if( vec.lengthSquared() > movement * movement ) {
+      const scaled= vec.unit().scale( movement )
+      hitbox.move( scaled.x, scaled.y )
+
+    // Just put the hitbox on the target
+    } else {
+      hitbox.x= this.#target.x
+      hitbox.y= this.#target.y
+      this.#target= null
+    }
   }
 }
 
