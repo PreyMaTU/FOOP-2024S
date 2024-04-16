@@ -58,12 +58,20 @@ class ClientConnection {
     this.#socket= socket
     this.#socket.on('connect', () => { console.log('Websocket connected') })
     this.#socket.on('message', msg => this.#protocol.handleIncomingMessage( msg ) )
-    this.#socket.on('close', () => { console.log('Websocket closed') /* TODO: Unalive Player? */ })
+    this.#socket.on('close', () => this.#onWebsocketClosed() )
     this.#socket.on('error', error => console.error('Websocket error:', error) )
     
     this.#sendBuffer = []
     this.#protocol= protocol
     this.#protocol.sendBuffer= this.#sendBuffer
+    this.onClose= null
+  }
+
+  #onWebsocketClosed() {
+    console.log('Websocket closed')
+    if( this.onClose ) {
+      this.onClose( this )
+    }
   }
 
   sendMessages( broadcastMessages= [] ) {
@@ -149,10 +157,22 @@ export class Server {
     const tunnel= 0
 
     const player= new Player( position, tunnel, connection )
+    connection.onClose= () => this.playerLeft( player )
+
     await player.waitForConnection()
 
     this.#players.set( player.id, player )
     console.log( `Player '${player.id}' joined the game` )
+  }
+
+  playerLeft( player ) {
+    const connectionIdx= this.#connections.indexOf( player.connection )
+    if( connectionIdx >= 0 ) {
+      this.#connections.splice(connectionIdx, 1)
+    }
+    
+    this.#players.delete( player.id )
+    console.log(`Player ${player.id} left the game`)
   }
 
   update() {
