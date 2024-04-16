@@ -1,6 +1,6 @@
 import { Entity, Hitbox } from './entity.js'
 
-const RunningDirection= {
+export const RunningDirection= {
   Up: { name: 'up' },
   Down: { name: 'down' },
   Left: { name: 'left' },

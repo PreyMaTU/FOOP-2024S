@@ -1,9 +1,30 @@
 import { Protocol } from "./public/Protocol.js"
+import { RunningDirection } from "./public/actors.js"
 
 class Position {
   constructor( x, y ) {
     this.x= x
     this.y= y
+  }
+
+  runningDirection( previous ) {
+    const dx= this.x - previous.x
+    const dy= this.y - previous.y
+    if( dx > 0 ) {
+      return RunningDirection.Right
+
+    } else if( dx < 0 ) {
+      return RunningDirection.Left
+
+    } else if( dy > 0 ) {
+      return RunningDirection.Down
+
+    } else if( dy < 0 ) {
+      return RunningDirection.Up
+
+    } else {
+      return null
+    }
   }
 }
 
@@ -108,18 +129,22 @@ class ClientConnection {
 class ServerEntity {
   #id
   #position
+  #runningDirection
 
   static idCounter= 0
 
   constructor( position ) {
     this.#id= ServerEntity.idCounter++
     this.#position= position
+    this.#runningDirection= null
   }
 
   get id() { return this.#id }
   get position() { return this.#position }
+  get runningDirection() { return this.#runningDirection }
 
   set position( newPosition ) {
+    this.#runningDirection= newPosition.runningDirection( this.#position )
     this.#position= newPosition
   }
 }
@@ -149,6 +174,8 @@ class Player extends ServerEntity {
     this.position= position
     this.#tunnel= tunnelColor
     this.#vote= voteColor
+
+    console.log(`Player update:`, this.runningDirection)
   }
 }
 
