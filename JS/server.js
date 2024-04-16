@@ -8,6 +8,9 @@ class Position {
 }
 
 class ServerProtocol extends Protocol {
+  #id
+  #player
+
   static State= {
     Unconnected: {name: 'unconnected'},
     Connected: {name: 'connected'}
@@ -16,7 +19,13 @@ class ServerProtocol extends Protocol {
   constructor() {
     super( ServerProtocol.State.Unconnected )
 
-    this.id= -1
+    this.#id= -1
+    this.#player= null
+  }
+
+  set player( player ) {
+    this.#id= player.id
+    this.#player= player
   }
 
   sendHelloMessage() {
@@ -36,6 +45,12 @@ class ServerProtocol extends Protocol {
       case 'hello':
         this.sendHelloMessage()
         this._setState( ServerProtocol.State.Connected )
+        break
+
+      case 'player':
+        if( this.state === ServerProtocol.State.Connected ) {
+          this.#player.update( new Position( msg.playerX, msg.playerY ), msg.tunnelColor, msg.voteColor )
+        }
         break
         
       default:
@@ -81,8 +96,8 @@ class ClientConnection {
     broadcastMessages.forEach( textMessage => this.#socket.send( textMessage ) )
   }
 
-  setProtocolId( id ) {
-    this.#protocol.id= id
+  setPlayer( player ) {
+    this.#protocol.player= player
   }
 
   async waitForConnection() {
@@ -92,45 +107,56 @@ class ClientConnection {
 
 class ServerEntity {
   #id
+  #position
 
   static idCounter= 0
 
-  constructor() {
+  constructor( position ) {
     this.#id= ServerEntity.idCounter++
+    this.#position= position
   }
 
   get id() { return this.#id }
+  get position() { return this.#position }
+
+  set position( newPosition ) {
+    this.#position= newPosition
+  }
 }
 
 class Player extends ServerEntity {
-  #position
   #vote
   #tunnel
   #alive
   #connection
 
   constructor( position, tunnel, connection ) {
-    super()
-    this.#position= position
+    super( position )
     this.#vote= null
     this.#tunnel= tunnel
     this.#alive= true
     this.#connection= connection
-    this.#connection.setProtocolId( this.id )
+    this.#connection.setPlayer( this )
   }
+
+  get connection() { return this.#connection }
 
   async waitForConnection() {
     await this.#connection.waitForConnection()
   }
+
+  update( position, tunnelColor, voteColor ) {
+    this.position= position
+    this.#tunnel= tunnelColor
+    this.#vote= voteColor
+  }
 }
 
 class ServerCat extends ServerEntity {
-  #position
   #brain
 
   constructor( position, brain ) {
-    super()
-    this.#position= position
+    super( position )
     this.#brain= brain
   }
 }

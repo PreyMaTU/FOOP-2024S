@@ -64,10 +64,20 @@ class Game {
     this.currentTunnel= null
     this.lastTimestamp= 0
     this.showHitboxes= false
+    this.lastSentPacketTimestamp= 0
   }
 
   changeState( newState ) {
     this.state= newState
+  }
+
+  sendNetworkPackets( timeStamp ) {
+    if( timeStamp - this.lastSentPacketTimestamp < 100 ) {
+      return
+    }
+
+    this.lastSentPacketTimestamp= timeStamp
+    this.playfield.sendNetworkPackets()
   }
 
   drawTopBar() {
@@ -98,6 +108,9 @@ class Game {
     const timeDelta= this.lastTimestamp > 0 ? timeStamp- this.lastTimestamp : 0
     this.lastTimestamp= timeStamp
     this.playfield.update( timeDelta )
+
+    // Make network messages every 100ms
+    this.sendNetworkPackets( timeStamp )
 
     // Toggle hitbox drawing
     if( this.keyboard.keyWasPressed('h') ) {

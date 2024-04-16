@@ -104,4 +104,10 @@ export class ClientProtocol extends Protocol {
     await this._waitForState( ClientProtocol.State.Connected )
     return this.#id
   }
+
+  sendPlayerUpdate( playerX, playerY, tunnelColor, voteColor ) {
+    if( this.state === ClientProtocol.State.Connected ) {
+      this._sendMessage('player', {playerX, playerY, tunnelColor, voteColor})
+    }
+  }
 }

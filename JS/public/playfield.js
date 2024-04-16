@@ -196,4 +196,13 @@ export class Playfield {
 
     return null
   }
+
+  sendNetworkPackets() {
+    const protocol= Game.the().connection.protocol
+    const tunnelColor= Game.the().currentTunnel?.color
+    const voteColor= null
+
+    const playerHitbox= this.#player.hitbox
+    protocol.sendPlayerUpdate( playerHitbox.x, playerHitbox.y, tunnelColor, voteColor )
+  }
 }

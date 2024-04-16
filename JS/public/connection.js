@@ -40,6 +40,8 @@ export class ServerConnection {
     this.#protocol.sendBuffer= this.#sendBuffer
   }
 
+  get protocol() { return this.#protocol }
+
   async open() {
     // Create a promise so we can wait for the websocket and resolve, when it is open
     return new Promise((res, rej) => {
