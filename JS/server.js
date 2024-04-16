@@ -3,8 +3,8 @@ import { RunningDirection } from "./public/actors.js"
 
 class Position {
   constructor( x, y ) {
-    this.x= x
-    this.y= y
+    this.x= Math.round(x* 10) / 10
+    this.y= Math.round(y* 10) / 10
   }
 
   runningDirection( previous ) {
