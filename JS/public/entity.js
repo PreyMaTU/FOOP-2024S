@@ -86,17 +86,19 @@ export class LinearSteerer {
     const vec= this.#target.sub( new Vector( hitbox.x, hitbox.y ) )
     const movement= this.#speed * timeDelta
 
-    // Only use the movement vector if we do not overshoot the target
-    if( vec.lengthSquared() > movement * movement ) {
-      const scaled= vec.unit().scale( movement )
-      hitbox.move( scaled.x, scaled.y )
-
-    // Just put the hitbox on the target
-    } else {
+    // Just set the hitbox to the target position when the distance is greater
+    // than what we could cover in 20 frames, or if the movement would overshoot
+    // the target
+    const distance= vec.length()
+    if(distance > 1000 *20/60 * this.#speed || distance <= movement ) {
       hitbox.x= this.#target.x
       hitbox.y= this.#target.y
       this.#target= null
+      return
     }
+
+    const scaled= vec.unit().scale( movement )
+    hitbox.move( scaled.x, scaled.y )
   }
 }
 
