@@ -76,7 +76,7 @@ export class MateMouse extends Mouse {
 
   receivedMessage( mouse ) {
     this.steerer.setTarget( this.hitbox, mouse.x, mouse.y )
-    this.runningDirection= RunningDirection.fromName( mouse.runningDirection ),
+    this.runningDirection= RunningDirection.fromName( mouse.runningDirection )
     this.tunnel= Game.the().playfield.tunnelByColor( mouse.tunnel )
   }
 
@@ -138,7 +138,15 @@ export class PlayerMouse extends Mouse {
 export class Cat extends Actor {
   constructor( posX, posY ) {
     super( posX, posY, 22, 22, 'catSitting', 'catRunning' )
+    this.steerer= new LinearSteerer( 30/1000 )
   }
 
-  // TODO: implement update
+  receivedMessage( mouse ) {
+    this.steerer.setTarget( this.hitbox, mouse.x, mouse.y )
+    this.runningDirection= RunningDirection.fromName( mouse.runningDirection )
+  }
+
+  update( timeDelta ) {
+    this.steerer.updateHitbox( this.hitbox, timeDelta )
+  }
 }

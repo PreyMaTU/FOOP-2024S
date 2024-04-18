@@ -1,8 +1,15 @@
 import { ClientProtocol, Protocol } from "./public/Protocol.js"
 import { RunningDirection } from "./public/actors.js"
+import { abstractMethod } from "./public/util.js"
 
 class Position {
   constructor( x, y ) {
+    if( x instanceof Position ) {
+      this.x= x.x
+      this.y= x.y
+      return
+    }
+
     this.x= Math.round(x* 10) / 10
     this.y= Math.round(y* 10) / 10
   }
@@ -178,8 +185,6 @@ class Player extends ServerEntity {
     this.position= position
     this.#tunnel= tunnelColor || null
     this.#vote= voteColor || null
-
-    console.log(`Player update:`, this.runningDirection)
   }
 
   makePacket() {
@@ -194,12 +199,84 @@ class Player extends ServerEntity {
   }
 }
 
+class Brain {
+  init() { abstractMethod() }
+  update() { abstractMethod() }
+}
+
+class SquareBrain extends Brain {
+  #state
+  #initialPosition
+
+  constructor() {
+    super()
+    this.#state= null
+    this.#initialPosition= null
+  }
+
+  init( position ) {
+    this.#state= RunningDirection.Down
+    this.#initialPosition= new Position( position )
+  }
+
+  update( position ) { 
+    const movement= 3
+    let newPosition= position
+
+    switch( this.#state ) {
+      case RunningDirection.Up:
+        newPosition= new Position( position.x, position.y - movement )
+        if( newPosition.y <= this.#initialPosition.y ) {
+          this.#state= RunningDirection.Right
+        }
+        break
+
+      case RunningDirection.Down:
+        newPosition= new Position( position.x, position.y + movement )
+        if( newPosition.y - this.#initialPosition.y >= 36 ) {
+          this.#state= RunningDirection.Left
+        }
+        break
+
+      case RunningDirection.Left:
+        newPosition= new Position( position.x - movement, position.y )
+        if( newPosition.x <= this.#initialPosition.x ) {
+          this.#state= RunningDirection.Up
+        }
+        break
+
+      case RunningDirection.Right:
+        newPosition= new Position( position.x + movement, position.y )
+        if( newPosition.x - this.#initialPosition.x >= 36 ) {
+          this.#state= RunningDirection.Down
+        }
+        break
+    }
+
+    return newPosition
+  }
+}
+
 class ServerCat extends ServerEntity {
   #brain
 
   constructor( position, brain ) {
     super( position )
     this.#brain= brain
+    this.#brain.init( position )
+  }
+
+  update() {
+    this.position= this.#brain.update( this.position )
+  }
+
+  makePacket() {
+    return {
+      id: this.id,
+      x: this.position.x,
+      y: this.position.y,
+      runningDirection: this.runningDirection?.name || null
+    }
   }
 }
 
@@ -212,7 +289,7 @@ export class Server {
   constructor() {
     this.#connections= []
     this.#players= new Map()
-    this.#cats= []
+    this.#cats= [ new ServerCat( new Position( 280, 50 ), new SquareBrain() ) ]
     this.#gameTime= 0
   }
 
@@ -244,10 +321,13 @@ export class Server {
   }
 
   update() {
-    const miceData= []
-    const catsData= []
+    this.#cats.forEach( cat => cat.update() )
 
+    // Transmit current map state to players via broadcast
+    const miceData= []
     this.#players.forEach( player => miceData.push( player.makePacket() ) )
+    
+    const catsData= this.#cats.map( cat => cat.makePacket() )
 
     ServerProtocol.broadcastEntityUpdates( this.#connections, miceData, catsData )
     this.#connections.forEach( connection => connection.sendMessages() )

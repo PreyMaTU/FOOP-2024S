@@ -122,6 +122,47 @@ class Tunnel {
   }
 }
 
+class EntityMap {
+  #map
+  #producer
+
+  constructor( producer ) {
+    this.#map= new Map()
+    this.#producer= producer
+  }
+
+  forEach( fn ) {
+    this.#map.forEach( fn )
+  }
+
+  updateFromArray( array, updateFn, ignoreList= [] ) {
+    array.forEach( item => {
+      if( ignoreList.indexOf(item.id) >= 0 ) {
+        updateFn( item, null )
+        return
+      }
+
+      // Get or create entity
+      let entity= this.#map.get( item.id )
+      if( !entity ) {
+        this.#map.set( item.id, entity= this.#producer() )
+      }
+
+      updateFn( item, entity )
+    })
+
+    // There are less items in the data packet than on the play field
+    // -> find the stale entity and delete it
+    if( array.length !== this.#map.size+ ignoreList.length ) {
+      for( const id of this.#map.keys() ) {
+        if( !array.some( item => item.id === id ) ) {
+          this.#map.delete( id )
+        }
+      }
+    }
+  }
+}
+
 export class Playfield {
   #cats
   #mice
@@ -129,8 +170,8 @@ export class Playfield {
   #player
 
   constructor() {
-    this.#cats= new Map()
-    this.#mice= new Map()
+    this.#cats= new EntityMap( () => new Cat( -1000, -1000 ) )
+    this.#mice= new EntityMap( () => new MateMouse( -1000, -1000 ) )
     this.#tunnels= []
     this.#player= null
   }
@@ -162,6 +203,7 @@ export class Playfield {
   update( timeDelta ) {
     this.#player.update( timeDelta )
     this.#mice.forEach( mouse => mouse.update( timeDelta ) )
+    this.#cats.forEach( cat => cat.update( timeDelta ) )
   }
 
   draw() {
@@ -187,7 +229,7 @@ export class Playfield {
 
     // Draw cats
     if( !tunnelOfPlayer ) {
-      this.#cats.forEach( cat => cat.draw() )
+      this.#cats.forEach( cat => { cat.draw(); console.log('cat', cat)} )
     }
     
     renderer.popState()
@@ -213,29 +255,17 @@ export class Playfield {
   receivedEntitiesMessage( mice, cats ) {
     // this.#cats= cats.map( cat => Cat.fromJsonData(cat) )
 
-    mice.forEach( mouse => {
-      if( mouse.id === Game.the().playerId ) {
-        // Update player things: alive?
+    this.#mice.updateFromArray( mice, (item, entity) => {
+      if( !entity ) {
+        // Update player here, because its id is ignored
         return
       }
 
-      // Get or create entity
-      let entity= this.#mice.get( mouse.id )
-      if( !entity ) {
-        this.#mice.set( mouse.id, entity= new MateMouse(100, 100) )
-      }
+      entity.receivedMessage( item )
+    }, [Game.the().playerId])
 
-      entity.receivedMessage( mouse )
+    this.#cats.updateFromArray( cats, (item, entity) => {
+      entity.receivedMessage( item )
     })
-
-    // There are less mice in the data packet than on the play field
-    // -> find the stale entity and delete it
-    if( mice.length !== this.#mice.size+ 1 ) {
-      for( const id of this.#mice.keys() ) {
-        if( !mice.some( mouse => mouse.id === id ) ) {
-          this.#mice.delete( id )
-        }
-      }
-    }
   }
 }
