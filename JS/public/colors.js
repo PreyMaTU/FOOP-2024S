@@ -2,6 +2,7 @@
 export const Colors= {
   Grass: '#a7d110',
   GrassWhileUnderground: '#5e7607',
+  NoVote: '#555',
   Black: '#000',
   White: '#fff',
   Tunnel: '#606060',

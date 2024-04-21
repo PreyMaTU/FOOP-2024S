@@ -5,7 +5,7 @@ import { Playfield } from './playfield.js'
 import { Keyboard } from './keyboard.js'
 import * as State from './state.js'
 import { ServerConnection } from './connection.js'
-import { ClientProtocol } from './Protocol.js'
+import { ClientProtocol } from './protocol.js'
 
 class Game {
   static instance= null
@@ -88,6 +88,19 @@ class Game {
 
     this.renderer.drawRectangle( 0, 0, this.renderer.width, 15 );
 
+    this.renderer.fillColor= Colors.White
+    this.renderer.textAlign= 'left'
+    this.renderer.fontSize= 9
+    this.renderer.drawText( 'Your Vote', 3, 3 )
+    this.renderer.drawText( 'Votes', 110, 3 )
+    this.renderer.drawText( 'Mice Left', 270, 3 )
+
+    const ownVoteColor= this.currentVote ? this.currentVote.color : Colors.NoVote
+    this.renderer.fillColor= ownVoteColor
+    this.renderer.drawCircle( 67, 8, 4 )
+
+
+
     this.renderer.popState()
   }
 
@@ -96,7 +109,16 @@ class Game {
     this.renderer.noStroke()
     this.renderer.fillColor= Colors.Black
 
-    this.renderer.drawRectangle( 0, this.renderer.height-15, this.renderer.width, 15 );
+    const yOffset= this.renderer.height-15
+    this.renderer.drawRectangle( 0, yOffset, this.renderer.width, 15 );
+
+    this.renderer.fillColor= Colors.White
+    this.renderer.textAlign= 'left'
+    this.renderer.fontSize= 9
+
+    this.renderer.drawText( 'Time', 3, yOffset+ 2)
+    this.renderer.textAlign = 'right'
+    this.renderer.drawText( 'Esc - Help', 317, yOffset+ 2)
 
     this.renderer.popState()
   }
