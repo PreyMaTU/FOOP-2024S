@@ -76,4 +76,8 @@ export class ServerProtocol extends Protocol {
   static broadcastTime( connections, time ) {
     connections.forEach( connection => connection.protocol._sendMessage('time', {time}) )
   }
+
+  static broadcastVictory( connections ) {
+    connections.forEach( connection => connection.protocol._sendMessage('victory') )
+  }
 }

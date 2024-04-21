@@ -232,3 +232,12 @@ export class GameOver extends MenuState {
 
   isAlive() { return false }
 }
+
+export class Victory extends MenuState {
+  frame() {
+    const game= Game.the()
+    game.playfield.draw()
+
+    this.drawMenuBox(120, 30, 'Victory' )
+  }
+}

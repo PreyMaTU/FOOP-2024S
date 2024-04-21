@@ -1,4 +1,5 @@
 import { abstractMethod } from './util.js'
+import * as States from './state.js'
 
 export class Protocol {
   #sendBuffer
@@ -94,6 +95,10 @@ export class ClientProtocol extends Protocol {
         Game.the()?.receivedTimeMessage( msg.time )
         break
         
+      case 'victory':
+        Game.the()?.changeState( new States.Victory() )
+        break
+
       default:
         console.error( `Received unknown message type '${msg.type}'`, msg )
         break

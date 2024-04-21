@@ -73,6 +73,8 @@ export class Player extends ServerEntity {
   }
 
   get connection() { return this.#connection }
+  get tunnel() { return this.#tunnel }
+  get alive() { return this.#alive }
 
   get vote() {
     return this.#tunnel && this.#vote

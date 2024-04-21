@@ -4,20 +4,34 @@ import { SquareBrain } from './cat_brain/brain.js'
 import { ServerProtocol } from './protocol.js'
 import { ClientConnection } from './connection.js'
 
+const GameState= {
+  Pending: {name: 'pending'},
+  Running: {name: 'running'},
+  Victory: {name: 'victory'},
+  Loss: {name: 'loss'}
+}
+
 export class Server {
   #connections
   #players
   #cats
   #startTime
+  #state
 
   constructor() {
     this.#connections= []
     this.#players= new Map()
     this.#cats= [ new ServerCat( new Position( 280, 50 ), new SquareBrain() ) ]
-    this.#startTime= -1
+    this.#state= GameState.Pending
+    this.#startTime= 0
   }
 
   async playerJoined( socket ) {
+    if( this.#state !== GameState.Pending && this.#state !== GameState.Running ) {
+      console.log( `Player tried joining ended game` )
+      return
+    }
+
     const connection= new ClientConnection( socket, new ServerProtocol() )
     this.#connections.push( connection )
 
@@ -32,6 +46,12 @@ export class Server {
 
     this.#players.set( player.id, player )
     console.log( `Player '${player.id}' joined the game` )
+
+    if( this.#state === GameState.Pending ) {
+      this.#startTime= Date.now()
+    }
+
+    this.#state= GameState.Running
   }
 
   playerLeft( player ) {
@@ -45,13 +65,8 @@ export class Server {
   }
 
   updateGameTime() {
-    // Start timer when there is at least one player
-    if( this.#startTime < 0 && this.#players.size > 0 ) {
-      this.#startTime= Date.now()
-    }
-
     // Timer stopped
-    if( this.#startTime < 0 ) {
+    if( this.#state !== GameState.Running ) {
       return
     }
 
@@ -59,6 +74,7 @@ export class Server {
     const gameDuration= 3* 60* 1000 // 3 minutes in ms
     const time= Date.now() - this.#startTime
     if( time > gameDuration ) {
+      this.#state= GameState.Loss
       this.#players.forEach( player => player.kill() )
     }
 
@@ -68,10 +84,43 @@ export class Server {
     }
   }
 
+  detectVictory() {
+    if( this.#state !== GameState.Running ) {
+      return
+    }
+
+    // All alive players (at least 2) have to be in the same tunnel
+    let tunnel= null
+    let alivePlayers= 0
+     for( const player of this.#players.values() ) {
+      if( !player.alive ) {
+        continue
+      }  
+
+      // The first player dictates the tunnel
+      if( !alivePlayers ) {
+        tunnel= player.tunnel
+      }
+
+      alivePlayers++
+
+      // At least one player is not in the same tunnel
+      if( !tunnel || player.tunnel !== tunnel ) {
+        return
+      }
+    }
+    
+    if( alivePlayers >= 2 ) {
+      this.#state= GameState.Victory
+      ServerProtocol.broadcastVictory( this.#connections )
+    }
+  }
+
   update() {
     this.#cats.forEach( cat => cat.update() )
 
     this.updateGameTime()
+    this.detectVictory()
 
     // Transmit current map state to players via broadcast
     const miceData= []
