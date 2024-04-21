@@ -11,7 +11,7 @@ const app = express()
 app.use( express.static('public') )
 expressWs( app )
 
-const server= new Server()
+const server= Server.create()
 app.ws('/socket', (ws, req) => server.playerJoined( ws ) )
 
 app.get('/map', (req, res) => res.send(playfieldMap) )

@@ -18,6 +18,16 @@ export class Server {
   #startTime
   #state
 
+  static instance= null
+
+  static create() {
+    return Server.instance= new Server()
+  }
+  
+  static the() {
+    return Server.instance
+  }
+
   constructor() {
     this.#connections= []
     this.#players= new Map()
@@ -148,3 +158,5 @@ export class Server {
     this.#connections.forEach( connection => connection.sendMessages() )
   }
 }
+
+global.Server= Server
