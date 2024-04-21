@@ -1,6 +1,7 @@
 
 import { Position, ServerCat, Player } from './serverEntity.js'
-import { SquareBrain } from './cat_brain/brain.js'
+import { SquareBrain } from './cat_brain/squareBrain.js'
+import { StalkerBrain } from './cat_brain/stalkerBrain.js'
 import { ServerProtocol } from './protocol.js'
 import { ClientConnection } from './connection.js'
 
@@ -31,7 +32,10 @@ export class Server {
   constructor() {
     this.#connections= []
     this.#players= new Map()
-    this.#cats= [ new ServerCat( new Position( 280, 50 ), new SquareBrain() ) ]
+    this.#cats= [
+      new ServerCat( new Position( 40, 30 ), new SquareBrain(240, 90, 6) ),
+      new ServerCat( new Position( 180, 90 ), new StalkerBrain( 3 ) )
+    ]
     this.#state= GameState.Pending
     this.#startTime= 0
   }
@@ -156,6 +160,26 @@ export class Server {
     ServerProtocol.broadcastVoteUpdates( this.#connections, votes )
 
     this.#connections.forEach( connection => connection.sendMessages() )
+  }
+
+  findClosestAlivePlayer( position ) {
+    const posVec= position.vector()
+    let closestPlayer= null
+    let closestSquaredDistance= Number.POSITIVE_INFINITY
+
+    this.#players.forEach( player => {
+      if( !player.alive ) {
+        return
+      }
+
+      const distance= player.position.vector().distanceToSquared( posVec )
+      if( distance < closestSquaredDistance ) {
+        closestPlayer= player
+        closestSquaredDistance= distance
+      }
+    })
+
+    return closestPlayer
   }
 }
 

@@ -140,7 +140,7 @@ export class PlayerMouse extends Mouse {
 export class Cat extends Actor {
   constructor( posX, posY ) {
     super( posX, posY, 22, 22, 'catSitting', 'catRunning' )
-    this.steerer= new LinearSteerer( 30/1000 )
+    this.steerer= new LinearSteerer( 60/1000 )
   }
 
   receivedMessage( mouse ) {

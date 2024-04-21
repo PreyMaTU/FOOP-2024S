@@ -1,5 +1,6 @@
 
 import { RunningDirection } from './public/actors.js'
+import { Vector } from './public/util.js'
 
 export class Position {
   constructor( x, y ) {
@@ -11,6 +12,19 @@ export class Position {
 
     this.x= Math.round(x* 10) / 10
     this.y= Math.round(y* 10) / 10
+  }
+
+  copy() {
+    return new Position( this )
+  }
+
+  vector() {
+    return new Vector( this.x, this.y )
+  }
+
+  move( vec ) {
+    this.x+= vec.x
+    this.y+= vec.y
   }
 
   runningDirection( previous ) {

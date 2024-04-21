@@ -230,7 +230,7 @@ export class Playfield {
 
     // Draw mice
     this.#mice.forEach( mouse => {
-      if( mouse.tunnel === tunnelOfPlayer ) {
+      if( mouse.tunnel === tunnelOfPlayer && mouse.alive ) {
         mouse.draw()
       }
     })
