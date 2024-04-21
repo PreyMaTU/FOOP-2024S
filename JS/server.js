@@ -8,13 +8,13 @@ export class Server {
   #connections
   #players
   #cats
-  #gameTime
+  #startTime
 
   constructor() {
     this.#connections= []
     this.#players= new Map()
     this.#cats= [ new ServerCat( new Position( 280, 50 ), new SquareBrain() ) ]
-    this.#gameTime= 0
+    this.#startTime= -1
   }
 
   async playerJoined( socket ) {
@@ -44,8 +44,34 @@ export class Server {
     console.log(`Player ${player.id} left the game`)
   }
 
+  updateGameTime() {
+    // Start timer when there is at least one player
+    if( this.#startTime < 0 && this.#players.size > 0 ) {
+      this.#startTime= Date.now()
+    }
+
+    // Timer stopped
+    if( this.#startTime < 0 ) {
+      return
+    }
+
+    // End the game when time runs out
+    const gameDuration= 3* 60* 1000 // 3 minutes in ms
+    const time= Date.now() - this.#startTime
+    if( time > gameDuration ) {
+      this.#players.forEach( player => player.kill() )
+    }
+
+    // Send time update message every second
+    if( Math.floor(time) % 1000 < 100 ) {
+      ServerProtocol.broadcastTime( this.#connections, Math.max(0, gameDuration- time) )
+    }
+  }
+
   update() {
     this.#cats.forEach( cat => cat.update() )
+
+    this.updateGameTime()
 
     // Transmit current map state to players via broadcast
     const miceData= []

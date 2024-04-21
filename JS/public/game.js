@@ -64,6 +64,7 @@ class Game {
     this.currentTunnel= null
     this.currentVote= null
     this.tunnelVotes= null
+    this.gameTime= 0
     this.lastTimestamp= 0
     this.showHitboxes= false
     this.lastSentPacketTimestamp= 0
@@ -91,6 +92,10 @@ class Game {
 
     // Get the vote counts for the current tunnel
     this.tunnelVotes = votes[this.currentTunnel.color] || null
+  }
+
+  receivedTimeMessage( time ) {
+    this.gameTime= time
   }
 
   drawTopBar() {
@@ -144,7 +149,12 @@ class Game {
     this.renderer.textAlign= 'left'
     this.renderer.fontSize= 9
 
-    this.renderer.drawText( 'Time', 3, yOffset+ 2)
+    const mins= Math.floor( this.gameTime / 60 / 1000 )
+    const secs= Math.floor( this.gameTime / 1000 ) % 60
+    const minsText= `${mins}`.padStart(2, '0')
+    const secsText= `${secs}`.padStart(2, '0')
+    this.renderer.drawText( `Time ${minsText}:${secsText}`, 3, yOffset+ 2)
+
     this.renderer.textAlign = 'right'
     this.renderer.drawText( 'Esc - Help', 317, yOffset+ 2)
 

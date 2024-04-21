@@ -72,4 +72,8 @@ export class ServerProtocol extends Protocol {
   static broadcastVoteUpdates( connections, votes ) {
     connections.forEach( connection => connection.protocol._sendMessage('votes', {votes}) )
   }
+
+  static broadcastTime( connections, time ) {
+    connections.forEach( connection => connection.protocol._sendMessage('time', {time}) )
+  }
 }

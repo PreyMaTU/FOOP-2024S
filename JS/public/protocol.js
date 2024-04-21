@@ -90,7 +90,8 @@ export class ClientProtocol extends Protocol {
         Game.the()?.receivedVotesMessage( msg.votes )
         break
         
-      case 'gameState':       // time remaining
+      case 'time':           // time: time
+        Game.the()?.receivedTimeMessage( msg.time )
         break
         
       default:
