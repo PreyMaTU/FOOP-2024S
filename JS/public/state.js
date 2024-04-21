@@ -8,7 +8,10 @@ class State {
     return this.constructor === kind
   }
 
+  init() {}
+
   isPlayable() { abstractMethod() }
+  isAlive() { return true }
 }
 
 class MenuState extends State {
@@ -207,6 +210,25 @@ export class PauseMenu extends MenuState {
 
     if( game.keyboard.keyIsDown( 'c' ) ) {
       this.restorePreviousState()
+    } else if( game.keyboard.keyIsDown('q') ) {
+      game.changeState( new GameOver() )
+      game.connection.protocol.sendQuitMessage()
     }
   }
+}
+
+export class GameOver extends MenuState {
+  init() {
+    Game.the().currentTunnel= null
+    Game.the().currentVote= null
+  }
+  
+  frame() {
+    const game= Game.the()
+    game.playfield.draw()
+
+    this.drawMenuBox(120, 30, 'Game Over' )
+  }
+
+  isAlive() { return false }
 }

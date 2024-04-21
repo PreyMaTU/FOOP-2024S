@@ -3,6 +3,7 @@ import { Colors } from './colors.js'
 import { Entity, Hitbox } from './entity.js'
 import { PlayerMouse, Cat, MateMouse } from './actors.js'
 import { Vector } from './util.js'
+import * as States from './state.js'
 
 class TunnelPortal extends Entity {
   #sprite
@@ -135,6 +136,10 @@ class EntityMap {
     this.#map.forEach( fn )
   }
 
+  get size() {
+    return this.#map.size
+  }
+
   updateFromArray( array, updateFn, ignoreList= [] ) {
     array.forEach( item => {
       if( ignoreList.indexOf(item.id) >= 0 ) {
@@ -247,6 +252,15 @@ export class Playfield {
     return this.#tunnels.find( tunnel => tunnel.color === color ) || null
   }
 
+  countMice() {
+    const total= this.#mice.size + 1
+    let alive= Game.the().state.isAlive() ? 1 : 0
+
+    this.#mice.forEach( mouse => alive+= mouse.alive ? 1 : 0 )
+
+    return {alive, total}
+  }
+
   sendNetworkPackets() {
     const game= Game.the()
     const protocol= game.connection.protocol
@@ -258,17 +272,20 @@ export class Playfield {
   }
 
   receivedEntitiesMessage( mice, cats ) {
-    // this.#cats= cats.map( cat => Cat.fromJsonData(cat) )
-
+    // Update the mice from the message
     this.#mice.updateFromArray( mice, (item, entity) => {
+      // Update the player entity
       if( !entity ) {
-        // Update player here, because its id is ignored
+        if( !item.alive ) {
+          Game.the().changeState( new States.GameOver() )
+        }
         return
       }
 
       entity.receivedMessage( item )
     }, [Game.the().playerId])
 
+    // Update the cats from the message
     this.#cats.updateFromArray( cats, (item, entity) => {
       entity.receivedMessage( item )
     })

@@ -82,11 +82,11 @@ export class ClientProtocol extends Protocol {
         this._setState( ClientProtocol.State.Connected )
         break
         
-      case 'entities':        // mice: [ id, x, y, movementDirection, alive? ], cats: [ id, x, y, movementDirection ]
+      case 'entities':        // mice: [ {id, x, y, movementDirection, alive} ], cats: [ {id, x, y, movementDirection} ]
         Game.the()?.playfield.receivedEntitiesMessage( msg.mice, msg.cats )
         break
         
-      case 'votes':           // tunnel id: { red: number, green: number, ... }, tunnel id: ....
+      case 'votes':           // tunnel color: { red: number, green: number, ... }, tunnel color: ....
         Game.the()?.receivedVotesMessage( msg.votes )
         break
         
@@ -107,6 +107,12 @@ export class ClientProtocol extends Protocol {
   sendPlayerUpdate( playerX, playerY, tunnelColor, voteColor ) {
     if( this.state === ClientProtocol.State.Connected ) {
       this._sendMessage('player', {playerX, playerY, tunnelColor, voteColor})
+    }
+  }
+
+  sendQuitMessage() {
+    if( this.state === ClientProtocol.State.Connected ) {
+      this._sendMessage('quit')
     }
   }
 }

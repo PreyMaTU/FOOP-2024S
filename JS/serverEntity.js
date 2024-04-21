@@ -89,6 +89,10 @@ export class Player extends ServerEntity {
     this.#vote= voteColor || null
   }
 
+  kill() {
+    this.#alive= false
+  }
+
   makePacket() {
     return {
       id: this.id,

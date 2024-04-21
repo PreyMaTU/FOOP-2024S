@@ -71,6 +71,7 @@ class Game {
 
   changeState( newState ) {
     this.state= newState
+    this.state.init()
   }
 
   sendNetworkPackets( timeStamp ) {
@@ -104,7 +105,9 @@ class Game {
     this.renderer.fontSize= 9
     this.renderer.drawText( 'Your Vote', 3, 3 )
     this.renderer.drawText( 'Votes', 110, 3 )
-    this.renderer.drawText( 'Mice Left', 269, 3 )
+
+    const { alive, total } = this.playfield.countMice()
+    this.renderer.drawText( `${alive}/${total} Mice Left`, 245, 3 )
 
     const ownVoteColor= this.currentVote ? this.currentVote.color : Colors.NoVote
     this.renderer.fillColor= ownVoteColor

@@ -48,6 +48,13 @@ export class ServerProtocol extends Protocol {
         }
         break
         
+      
+      case 'quit':
+        if( this.state === ServerProtocol.State.Connected ) {
+          this.#player.kill()
+        }
+        break
+
       default:
         console.error( `Received unknown message type '${msg.type}' from '${msg.id}'`, msg )
         break

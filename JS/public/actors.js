@@ -72,12 +72,14 @@ export class MateMouse extends Mouse {
   constructor( posX, posY ) {
     super( posX, posY )
     this.steerer= new LinearSteerer( 30/1000 )
+    this.alive= true
   }
 
   receivedMessage( mouse ) {
     this.steerer.setTarget( this.hitbox, mouse.x, mouse.y )
     this.runningDirection= RunningDirection.fromName( mouse.runningDirection )
     this.tunnel= Game.the().playfield.tunnelByColor( mouse.tunnel )
+    this.alive= mouse.alive
   }
 
   update( timeDelta ) {
