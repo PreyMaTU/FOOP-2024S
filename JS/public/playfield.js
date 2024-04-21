@@ -229,7 +229,7 @@ export class Playfield {
 
     // Draw cats
     if( !tunnelOfPlayer ) {
-      this.#cats.forEach( cat => { cat.draw(); console.log('cat', cat)} )
+      this.#cats.forEach( cat => { cat.draw()} )
     }
     
     renderer.popState()
