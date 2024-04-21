@@ -25,32 +25,29 @@ export class SquareBrain extends Brain {
   }
 
   update( position ) { 
-    let newPosition= position
+    const newPosition= position.copy()
+    newPosition.move( this.#state.vector.scale( this.#speed ) )
 
     switch( this.#state ) {
       case RunningDirection.Up:
-        newPosition= new Position( position.x, position.y - this.#speed )
         if( newPosition.y <= this.#initialPosition.y ) {
           this.#state= RunningDirection.Right
         }
         break
 
       case RunningDirection.Down:
-        newPosition = new Position(position.x, position.y + this.#speed )
         if( newPosition.y - this.#initialPosition.y >= this.#height ) {
           this.#state= RunningDirection.Left
         }
         break
 
       case RunningDirection.Left:
-        newPosition = new Position(position.x - this.#speed, position.y )
         if( newPosition.x <= this.#initialPosition.x ) {
           this.#state= RunningDirection.Up
         }
         break
 
       case RunningDirection.Right:
-        newPosition = new Position(position.x + this.#speed, position.y )
         if( newPosition.x - this.#initialPosition.x >= this.#width ) {
           this.#state= RunningDirection.Down
         }

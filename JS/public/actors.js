@@ -1,15 +1,23 @@
 import { Entity, Hitbox, LinearSteerer } from './entity.js'
+import { Vector } from './util.js'
 
 export class RunningDirection {
-  static Up= new RunningDirection( 'up' )
-  static Down= new RunningDirection( 'down' )
-  static Left= new RunningDirection( 'left' )
-  static Right= new RunningDirection( 'right')
+  #name
+  #vector
 
-  constructor( name ) {
-    this.name= name
+  static Up= new RunningDirection( 'up', new Vector( 0, -1 ) )
+  static Down= new RunningDirection( 'down', new Vector( 0, 1 ) )
+  static Left= new RunningDirection( 'left', new Vector( -1, 0 ) )
+  static Right= new RunningDirection( 'right', new Vector( 1, 0 ) )
+
+  constructor( name, vector ) {
+    this.#name= name
+    this.#vector= vector
     Object.freeze( this )
   }
+
+  get name() { return this.#name }
+  get vector() { return this.#vector }
 
   static fromName( name ) {
     for( const key in RunningDirection ) {
