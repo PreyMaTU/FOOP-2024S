@@ -104,7 +104,7 @@ export class InsideTunnel extends PlayableState {
     } else if( game.keyboard.keyWasPressed('Escape') ) {
       game.changeState( new HelpMenu() )
       
-    } else if( game.keyboard.keyWasPressed('Tab') ) {
+    } else if( game.keyboard.keyWasPressed('v') ) {
       game.changeState( new VoteMenu() )
     }
   }
@@ -116,7 +116,62 @@ export class InsideTunnel extends PlayableState {
 }
 
 export class VoteMenu extends MenuState {
+  frame() {
+    const game = Game.the()
+    game.playfield.draw()
 
+    this.drawMenuBox(100, 100, 'Vote', [])
+
+    const renderer= game.renderer
+    renderer.pushState()
+
+    const tunnels= Game.the().playfield.tunnels
+    const angleStep= 2* Math.PI / tunnels.length
+
+    const radius= 20
+
+    let angle= 0
+    let idx = 1
+    for( const tunnel of tunnels ) {
+      const x= renderer.width/2+ Math.sin(angle)* radius
+      const y= renderer.height/2- Math.cos(angle)* radius+ 15
+
+      renderer.noStroke()
+      renderer.fillColor= tunnel.color
+      renderer.drawCircle( x, y, 10 )
+
+      renderer.textAlign= 'center'
+      renderer.fillColor= Colors.White
+      renderer.drawText(''+ idx, x, y- 4)
+
+      // Draw highlighting circle around voted tunnel
+      if( game.currentVote === tunnel ) {
+        renderer.noFill()
+
+        renderer.strokeColor= Colors.White
+        renderer.strokeWeight= 2
+        renderer.drawCircle( x, y, 13 )
+      }
+
+      angle+= angleStep
+      idx++
+    }
+
+    // Update the vote when key was pressed with index number
+    idx= 1
+    for( const tunnel of tunnels ) {
+      if( game.keyboard.keyWasPressed( ''+ idx ) ) {
+        game.currentVote= tunnel
+      }
+      idx++
+    }
+
+    renderer.popState()
+
+    if( game.keyboard.keyWasPressed('v') ) {
+      this.restorePreviousState()
+    }
+  }
 }
 
 export class HelpMenu extends MenuState {
@@ -128,7 +183,7 @@ export class HelpMenu extends MenuState {
       { command: 'W A S D', description: 'Movement' },
       { command: 'Space', description: 'Enter/Exit Tunnel' },
       { command: 'Esc', description: 'Open/Close Help' },
-      { command: 'Tab', description: 'Open/Close Vote' },
+      { command: 'V', description: 'Open/Close Vote' },
       { command: 'P', description: 'Pause' }
     ])
 

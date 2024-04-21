@@ -181,6 +181,10 @@ export class Playfield {
     return {x: 0, y: 15, w: renderer.width, h: renderer.height- 30}
   }
 
+  get tunnels() {
+    return this.#tunnels
+  }
+
   async load() {
     const response= await fetch('/map')
     if( !response.ok ) {

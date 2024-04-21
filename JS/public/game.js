@@ -62,6 +62,7 @@ class Game {
     this.playerId= playerId
     this.connection= connection
     this.currentTunnel= null
+    this.currentVote= null
     this.lastTimestamp= 0
     this.showHitboxes= false
     this.lastSentPacketTimestamp= 0
