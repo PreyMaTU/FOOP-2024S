@@ -74,6 +74,11 @@ export class Player extends ServerEntity {
 
   get connection() { return this.#connection }
 
+  get vote() {
+    return this.#tunnel && this.#vote
+      ? { tunnel: this.#tunnel, vote: this.#vote } : null
+  }
+
   async waitForConnection() {
     await this.#connection.waitForConnection()
   }

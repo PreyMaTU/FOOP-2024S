@@ -61,4 +61,8 @@ export class ServerProtocol extends Protocol {
   static broadcastEntityUpdates( connections, mice, cats ) {
     connections.forEach( connection => connection.protocol._sendMessage('entities', {mice, cats}) )
   }
+
+  static broadcastVoteUpdates( connections, votes ) {
+    connections.forEach( connection => connection.protocol._sendMessage('votes', {votes}) )
+  }
 }

@@ -87,6 +87,7 @@ export class ClientProtocol extends Protocol {
         break
         
       case 'votes':           // tunnel id: { red: number, green: number, ... }, tunnel id: ....
+        Game.the()?.receivedVotesMessage( msg.votes )
         break
         
       case 'gameState':       // time remaining

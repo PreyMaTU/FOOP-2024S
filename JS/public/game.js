@@ -63,6 +63,7 @@ class Game {
     this.connection= connection
     this.currentTunnel= null
     this.currentVote= null
+    this.tunnelVotes= null
     this.lastTimestamp= 0
     this.showHitboxes= false
     this.lastSentPacketTimestamp= 0
@@ -81,6 +82,16 @@ class Game {
     this.playfield.sendNetworkPackets()
   }
 
+  receivedVotesMessage( votes ) {
+    if( !this.currentTunnel ) {
+      this.tunnelVotes= null
+      return
+    }
+
+    // Get the vote counts for the current tunnel
+    this.tunnelVotes = votes[this.currentTunnel.color] || null
+  }
+
   drawTopBar() {
     this.renderer.pushState()
     this.renderer.noStroke()
@@ -93,13 +104,27 @@ class Game {
     this.renderer.fontSize= 9
     this.renderer.drawText( 'Your Vote', 3, 3 )
     this.renderer.drawText( 'Votes', 110, 3 )
-    this.renderer.drawText( 'Mice Left', 270, 3 )
+    this.renderer.drawText( 'Mice Left', 269, 3 )
 
     const ownVoteColor= this.currentVote ? this.currentVote.color : Colors.NoVote
     this.renderer.fillColor= ownVoteColor
     this.renderer.drawCircle( 67, 8, 4 )
 
-
+    // Draw votes of teammates in same tunnel
+    if( this.currentTunnel && this.tunnelVotes ) { 
+      let xOffset= 150
+      const tunnelColors= Object.keys(this.tunnelVotes).sort()
+      for( const color of tunnelColors ) {
+        this.renderer.strokeWeight= 1
+        this.renderer.strokeColor = Colors.Black
+        this.renderer.fillColor= color
+        
+        for( let i= 0; i< this.tunnelVotes[color]; i++ ) {
+          this.renderer.drawCircle(xOffset, 8, 5)
+          xOffset+= 5
+        }
+      }
+    }
 
     this.renderer.popState()
   }

@@ -54,6 +54,22 @@ export class Server {
     const catsData= this.#cats.map( cat => cat.makePacket() )
 
     ServerProtocol.broadcastEntityUpdates( this.#connections, miceData, catsData )
+
+    // Transmit current votes to the players via broadcast
+    const votes= {}
+    this.#players.forEach( player => {
+      const tunnelVote= player.vote
+      if( !tunnelVote ) {
+        return
+      }
+
+      // Ensure that property exists
+      const tunnel= (votes[tunnelVote.tunnel]= votes[tunnelVote.tunnel] || {})
+      tunnel[tunnelVote.vote]= (tunnel[tunnelVote.vote] || 0)+ 1
+    })
+
+    ServerProtocol.broadcastVoteUpdates( this.#connections, votes )
+
     this.#connections.forEach( connection => connection.sendMessages() )
   }
 }
