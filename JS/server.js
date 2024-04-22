@@ -79,6 +79,23 @@ export class Server {
     console.log(`Player ${player.id} left the game`)
   }
 
+  countVotes() {
+    const votes= {}
+    this.#players.forEach( player => {
+      const tunnelVote= player.vote
+      if( !tunnelVote ) {
+        return
+      }
+
+      // Either get or create entry for the tunnel
+      const tunnel= (votes[tunnelVote.tunnel]= votes[tunnelVote.tunnel] || {})
+      // Increment (and create) vote count for the color on the tunnel entry
+      tunnel[tunnelVote.vote]= (tunnel[tunnelVote.vote] || 0)+ 1
+    })
+
+    return votes
+  }
+
   updateGameTime() {
     // Timer stopped
     if( this.#state !== GameState.Running ) {
@@ -160,18 +177,7 @@ export class Server {
     ServerProtocol.broadcastEntityUpdates( this.#connections, miceData, catsData )
 
     // Transmit current votes to the players via broadcast
-    const votes= {}
-    this.#players.forEach( player => {
-      const tunnelVote= player.vote
-      if( !tunnelVote ) {
-        return
-      }
-
-      // Ensure that property exists
-      const tunnel= (votes[tunnelVote.tunnel]= votes[tunnelVote.tunnel] || {})
-      tunnel[tunnelVote.vote]= (tunnel[tunnelVote.vote] || 0)+ 1
-    })
-
+    const votes= this.countVotes()
     ServerProtocol.broadcastVoteUpdates( this.#connections, votes )
 
     this.#connections.forEach( connection => connection.sendMessages() )
