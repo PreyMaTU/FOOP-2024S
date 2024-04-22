@@ -42,11 +42,6 @@ export class Server {
   }
 
   async playerJoined( socket ) {
-    if( this.#state !== GameState.Pending && this.#state !== GameState.Running ) {
-      console.log( `Player tried joining ended game` )
-      return
-    }
-
     const connection= new ClientConnection( socket, new ServerProtocol() )
     this.#connections.push( connection )
 
@@ -62,11 +57,18 @@ export class Server {
     this.#players.set( player.id, player )
     console.log( `Player '${player.id}' joined the game` )
 
+    // Start the game
     if( this.#state === GameState.Pending ) {
       this.#startTime= Date.now()
+      this.#state= GameState.Running
     }
 
-    this.#state= GameState.Running
+    // The game has already ended
+    if( this.#state !== GameState.Pending && this.#state !== GameState.Running ) {
+      console.log( `... but game has already ended` )
+      player.kill()
+      return
+    }
   }
 
   playerLeft( player ) {
