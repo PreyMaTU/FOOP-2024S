@@ -4,6 +4,7 @@ import { SquareBrain } from './cat_brain/squareBrain.js'
 import { StalkerBrain } from './cat_brain/stalkerBrain.js'
 import { ServerProtocol } from './protocol.js'
 import { ClientConnection } from './connection.js'
+import { Vector } from './public/util.js'
 
 const GameState= {
   Pending: {name: 'pending'},
@@ -130,11 +131,25 @@ export class Server {
     }
   }
 
+  detectLoss() {
+    if( this.#state !== GameState.Running ) {
+      return
+    }
+
+    // Check if all players are dead
+    let allDead= true
+    this.#players.forEach( player => allDead &&= !player.alive )
+    if( allDead ) {
+      this.#state= GameState.Loss
+    }
+  }
+
   update() {
     this.#cats.forEach( cat => cat.update() )
 
     this.updateGameTime()
     this.detectVictory()
+    this.detectLoss()
 
     // Transmit current map state to players via broadcast
     const miceData= []
@@ -162,17 +177,18 @@ export class Server {
     this.#connections.forEach( connection => connection.sendMessages() )
   }
 
-  findClosestAlivePlayer( position ) {
+  findClosestOvergroundAlivePlayer( position, maxDistance= Number.POSITIVE_INFINITY ) {
     const posVec= position.vector()
     let closestPlayer= null
-    let closestSquaredDistance= Number.POSITIVE_INFINITY
+    let closestSquaredDistance= maxDistance* maxDistance
 
+    const mouseHitboxCenterOffset= new Vector( 6, 6 )
     this.#players.forEach( player => {
-      if( !player.alive ) {
+      if( !player.alive || player.tunnel ) {
         return
       }
 
-      const distance= player.position.vector().distanceToSquared( posVec )
+      const distance= player.position.vector().add( mouseHitboxCenterOffset ).distanceToSquared( posVec )
       if( distance < closestSquaredDistance ) {
         closestPlayer= player
         closestSquaredDistance= distance

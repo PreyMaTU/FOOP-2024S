@@ -22,9 +22,15 @@ export class Position {
     return new Vector( this.x, this.y )
   }
 
-  move( vec ) {
-    this.x+= vec.x
-    this.y+= vec.y
+  move( vec, y ) {
+    if( vec instanceof Vector ) {
+      this.x+= vec.x
+      this.y+= vec.y
+    } else {
+      this.x+= vec
+      this.y+= y
+    }
+    return this
   }
 
   runningDirection( previous ) {
@@ -131,6 +137,14 @@ export class ServerCat extends ServerEntity {
   }
 
   update() {
+    // Check if there is a player close enough to kill
+    const killDistance= 11+ 6- 4 // Half of each hitbox minus 2px each
+    const hitboxCenter= this.position.copy().move( 11, 11 )
+    const closestPlayer= Server.the().findClosestOvergroundAlivePlayer( hitboxCenter, killDistance )
+    if( closestPlayer ) {
+      closestPlayer.kill()
+    }
+
     this.position= this.#brain.update( this.position )
   }
 

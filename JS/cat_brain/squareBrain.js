@@ -25,8 +25,7 @@ export class SquareBrain extends Brain {
   }
 
   update( position ) { 
-    const newPosition= position.copy()
-    newPosition.move( this.#state.vector.scale( this.#speed ) )
+    const newPosition= position.copy().move( this.#state.vector.scale( this.#speed ) )
 
     switch( this.#state ) {
       case RunningDirection.Up:

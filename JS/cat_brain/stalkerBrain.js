@@ -18,7 +18,7 @@ export class StalkerBrain extends Brain {
     let newPosition= position.copy()
 
     if( !this.#focusedPlayer || !this.#focusedPlayer.alive ) {
-      this.#focusedPlayer= Server.the().findClosestAlivePlayer( position )
+      this.#focusedPlayer= Server.the().findClosestOvergroundAlivePlayer( position.copy().move(11, 11) )
     }
     
     if( !this.#focusedPlayer ) {
