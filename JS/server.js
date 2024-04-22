@@ -4,7 +4,8 @@ import { SquareBrain } from './cat_brain/squareBrain.js'
 import { StalkerBrain } from './cat_brain/stalkerBrain.js'
 import { ServerProtocol } from './protocol.js'
 import { ClientConnection } from './connection.js'
-import { Vector } from './public/util.js'
+import { Vector, sampleArray, sampleSubArray } from './public/util.js'
+import { playfieldMap } from './playfieldMap.js'
 
 const GameState= {
   Pending: {name: 'pending'},
@@ -41,14 +42,48 @@ export class Server {
     this.#startTime= 0
   }
 
+  pickRandomPositionInsideTunnel() {
+    // Count the number of mice in each tunnel
+    const tunnelOccupation= {}
+    for( const tunnel of playfieldMap.tunnels ) {
+      tunnelOccupation[tunnel.color]= 0
+    }
+    this.#players.forEach( player => { 
+      if( player.tunnel ) {
+        tunnelOccupation[player.tunnel]++
+      }
+    })
+
+    // Find the set of tunnels with the lowest number
+    // of mice in them
+    const emptyTunnels= []
+    let lowestOccupation= Number.MAX_SAFE_INTEGER
+    for( const tunnel of playfieldMap.tunnels ) {
+      const occupation= tunnelOccupation[ tunnel.color ]
+      if( occupation === lowestOccupation ) {
+        emptyTunnels.push( tunnel )
+      } else if( occupation < lowestOccupation ) {
+        emptyTunnels.length= 0
+        emptyTunnels.push( tunnel )
+        lowestOccupation= occupation
+      }
+    }
+
+    // Pick a random tunnel from the viable ones, and pick
+    // a random spot in a random section of the tunnel
+    const tunnel= sampleArray( emptyTunnels )
+    const [start, end]= sampleSubArray( tunnel.geometry, 2 )
+    const randomOffset= new Vector(end).sub( new Vector(start) ).scale(Math.random())
+    const position= new Position( start[0], start[1] ).move( randomOffset )
+
+    return { position, tunnel: tunnel.color }
+  }
+
   async playerJoined( socket ) {
     const connection= new ClientConnection( socket, new ServerProtocol() )
     this.#connections.push( connection )
 
-    // TODO: Pick random spot in random tunnel (maybe distribute even among tunnels)
-    const position= new Position( 200, 200 )
-    const tunnel= 0
-
+    const { position, tunnel }= this.pickRandomPositionInsideTunnel()
     const player= new Player( position, tunnel, connection )
     connection.onClose= () => this.playerLeft( player )
 

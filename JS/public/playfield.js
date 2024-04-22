@@ -206,7 +206,7 @@ export class Playfield {
 
     this.#tunnels= mapData.tunnels.map( data => Tunnel.fromJsonData( data ) )
 
-    this.#player= new PlayerMouse( 100, 100 )
+    this.#player= new PlayerMouse( -1000, -1000 )
   }
 
   update( timeDelta ) {
@@ -279,9 +279,18 @@ export class Playfield {
         if( !item.alive ) {
           Game.the().changeState( new States.GameOver() )
         }
+
+        // We were teleported into or out of a tunnel
+        if( !!Game.the().currentTunnel !== !!item.tunnel && Game.the().state.isPlayable() ) {
+          const tunnel= item.tunnel ? this.tunnelByColor( item.tunnel ) : null
+          this.#player.toggleTunnel( tunnel )
+          this.#player.hitbox.x= item.x
+          this.#player.hitbox.y= item.y
+        }
         return
       }
 
+      // Update mate mice
       entity.receivedMessage( item )
     }, [Game.the().playerId])
 

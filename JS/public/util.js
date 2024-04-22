@@ -3,11 +3,29 @@ export function abstractMethod() {
   throw Error('Abstract Method');
 }
 
+export function sampleArray( array ) {
+  return array.length ? array[ Math.floor( Math.random() * array.length ) ] : undefined
+}
+
+export function sampleSubArray( array, len ) {
+  if(array.length < len) {
+    return []
+  }
+  
+  const idx= Math.floor( Math.random() * (array.length- len+ 1) )
+  return array.slice( idx, idx+ len )
+}
+
 export class Vector {
   constructor( x, y ) {
     if( Array.isArray(x) ) {
       this.x= x[0]
       this.y= x[1]
+
+    } else if( x instanceof Vector ) {
+      this.x= x.x
+      this.y= x.y
+
     } else {
       this.x= x;
       this.y= y;

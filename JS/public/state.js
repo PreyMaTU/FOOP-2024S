@@ -91,8 +91,10 @@ export class OutsideTunnel extends PlayableState {
   }
 
   changeToOpposite( currentTunnel ) {
-    Game.the().currentTunnel= currentTunnel
-    Game.the().changeState( new InsideTunnel() )
+    if( currentTunnel ) {
+      Game.the().currentTunnel= currentTunnel
+      Game.the().changeState( new InsideTunnel() )
+    }
   }
 }
 

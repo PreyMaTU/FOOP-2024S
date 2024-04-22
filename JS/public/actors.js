@@ -122,10 +122,10 @@ export class PlayerMouse extends Mouse {
       this.runningDirection= RunningDirection.Right
 
     } else if( keyboard.keyWasPressed(' ') ) { // Space Key
+      // Toggle the current tunnel if the player stands on a tunnel portal
       const currentTunnel = Game.the().playfield.tunnelInReachOfPlayer()
       if( currentTunnel ) {
-        Game.the().state.changeToOpposite( currentTunnel )
-        this.tunnel= Game.the().currentTunnel
+        this.toggleTunnel( currentTunnel )
       }
 
     } else {
@@ -142,6 +142,11 @@ export class PlayerMouse extends Mouse {
 
     const fieldDimensions= Game.the().playfield.dimensions
     this.hitbox.clampPosition( fieldDimensions.x, fieldDimensions.y, fieldDimensions.x+ fieldDimensions.w, fieldDimensions.y+ fieldDimensions.h )
+  }
+
+  toggleTunnel( tunnel ) {
+    Game.the().state.changeToOpposite( tunnel )
+    this.tunnel= Game.the().currentTunnel
   }
 }
 
