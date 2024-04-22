@@ -2,6 +2,12 @@
 import { abstractMethod, Vector } from './util.js'
 
 export class Hitbox {
+  /**
+   * @param {number} x 
+   * @param {number} y 
+   * @param {number} w 
+   * @param {number} h 
+   */
   constructor(x, y, w, h) {
     this.x= x
     this.y= y
@@ -62,11 +68,17 @@ export class LinearSteerer {
   #speed
   #target
 
+  /** @param {speed} number */
   constructor( speed ) {
     this.#speed= speed
     this.#target= null
   }
 
+  /**
+   * @param {Hitbox} hitbox
+   * @param {number} x
+   * @param {number} y
+   */
   setTarget( hitbox, x, y ) {
     // Do not set a target when the hitbox already reached the target
     if( hitbox.x === x && hitbox.y === y ) {
@@ -77,6 +89,10 @@ export class LinearSteerer {
     this.#target= new Vector( x, y )
   }
 
+  /**
+   * @param {Hitbox} hitbox
+   * @param {number} timeDelta
+   */
   updateHitbox( hitbox, timeDelta ) {
     if( !this.#target ) {
       return

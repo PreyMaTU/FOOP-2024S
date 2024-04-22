@@ -123,15 +123,19 @@ class Tunnel {
   }
 }
 
+/** @template TEntity */
 class EntityMap {
   #map
   #producer
 
+  /** @param {function():TEntity} producer */
   constructor( producer ) {
+    /** @type {Map<number, TEntity>} */
     this.#map= new Map()
     this.#producer= producer
   }
 
+  /** @param {function(TEntity, number, Map<number, TEntity>):void} fn */
   forEach( fn ) {
     this.#map.forEach( fn )
   }
@@ -177,7 +181,9 @@ export class Playfield {
   constructor() {
     this.#cats= new EntityMap( () => new Cat( -1000, -1000 ) )
     this.#mice= new EntityMap( () => new MateMouse( -1000, -1000 ) )
+    /** @type {Tunnel[]} */
     this.#tunnels= []
+    /** @type {PlayerMouse?} */
     this.#player= null
   }
 
@@ -197,6 +203,7 @@ export class Playfield {
       return
     }
 
+    /** @type {{ tunnels: any[]}} */
     const mapData= await response.json()
 
     if( !mapData || !Array.isArray( mapData.tunnels ) ) {

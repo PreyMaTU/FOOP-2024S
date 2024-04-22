@@ -4,7 +4,10 @@ export class Keyboard {
   #frameKeys
 
   constructor() {
+    /** @type {Set<string>} */
     this.#heldKeys= new Set()
+
+    /** @type {Set<string>} */
     this.#frameKeys= new Set()
 
     document.addEventListener('keydown', e => this.#onKeyDown(e) )

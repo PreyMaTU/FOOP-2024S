@@ -3,6 +3,10 @@ import { RunningDirection } from './public/actors.js'
 import { Vector } from './public/util.js'
 
 export class Position {
+  /**
+   * @param {number | Position} x 
+   * @param {number} y 
+   */
   constructor( x, y ) {
     if( x instanceof Position ) {
       this.x= x.x

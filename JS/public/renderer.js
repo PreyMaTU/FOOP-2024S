@@ -161,6 +161,7 @@ export class Renderer {
     this.#context.scale(-1, 1)
   }
 
+  /** @param {[number, number][]} vertices */
   drawPath( vertices ) {
     this.#context.beginPath()
 
