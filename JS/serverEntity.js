@@ -7,11 +7,17 @@ export class Position {
     if( x instanceof Position ) {
       this.x= x.x
       this.y= x.y
-      return
+    } else {
+      this.x= x
+      this.y= y
     }
 
-    this.x= Math.round(x* 10) / 10
-    this.y= Math.round(y* 10) / 10
+    this.#round()
+  }
+
+  #round() {
+    this.x= Math.round(this.x* 10) / 10
+    this.y= Math.round(this.y* 10) / 10
   }
 
   copy() {
@@ -30,6 +36,8 @@ export class Position {
       this.x+= vec
       this.y+= y
     }
+
+    this.#round()
     return this
   }
 
