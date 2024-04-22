@@ -34,7 +34,7 @@ export class Server {
     this.#connections= []
     this.#players= new Map()
     this.#cats= [
-      new ServerCat( new Position( 40, 30 ), new SquareBrain(240, 90, 6) ),
+      new ServerCat( new Position( 40, 30 ), new SquareBrain(240, 90, 6, 0.006) ),
       new ServerCat( new Position( 180, 90 ), new StalkerBrain( 3 ) )
     ]
     this.#state= GameState.Pending
