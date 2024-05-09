@@ -20,6 +20,24 @@ node .
 
 Then open a browser tab and navigate to `localhost:3000`.
 
+### SmallTalk
+The second version of the game is simplified and is implemented using SmallTalk and Morphic. 
+Compared to the JS version there is only a single player mode and one cat that chases the
+player. To run the game, you need to first acquire [Squeak](https://squeak.org/downloads/) and
+start it.
+
+Then left click on the desktop and select "open...", which will display another context menu.
+Here select "file list" and navigate to the folder `/ST`. Select the `game.st` file and
+click the "filein" button. Now the game code is loaded. Finally, open den drop down on top
+of the desktop and click "Workspace". Here type the following command:
+
+```
+Game create.
+```
+
+With the cursor remaining in the same line as the above command press `Ctrl`+`D` (`Cmd`+`D`).
+The game's window should now be visible.
+
 ## Group "P"
 This project is worked on by the following team members:
 
