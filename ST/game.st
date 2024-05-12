@@ -1,4 +1,31 @@
 
+!Morph methodsFor: 'FOOP'!
+boundsOverlapWith: morph
+  |a b|
+  a:= self bounds.
+  b:= morph bounds.
+
+  "No area means no possbile overlap"
+  (
+    (a corner x- a origin x <= 0) or: (
+    (a corner y - a origin y <= 0) or: (
+    (b corner x- b origin x <= 0) or: (
+    (b corner y - b origin y <= 0) )))
+  ) ifTrue: [
+    ^false
+  ].
+
+  "Hitboxes above or besides each other"
+  (
+    (a origin x > b corner x) or: ( (b origin x > a corner x) or: (
+    (a origin y > b corner y) or: ( (b origin y > a corner y) )))
+  ) ifTrue: [
+    ^false
+  ].
+
+  ^true
+! !
+
 RectangleMorph subclass: #Cat
   instanceVariableNames: 'state direction initialPosition pathWidth pathHeight speed'
   classVariableNames: ''
@@ -83,7 +110,7 @@ stepTime
   ^33
 ! !
 
-CircleMorph subclass: #PlayerMouse
+RectangleMorph subclass: #PlayerMouse
   instanceVariableNames: 'keys'
   classVariableNames: ''
   poolDictionaries: ''
@@ -113,6 +140,11 @@ handleListenEvent: event
     ^self
   ].
 
+  keyName = ' ' ifTrue: [
+    self toggleTunnel: Game the playfield tunnelInReachOfPlayer.
+    ^self
+  ].
+
   "Remeber that the key is held down"
   event isKeyDown ifTrue: [
     keys add: keyName.
@@ -136,6 +168,10 @@ intoWorld: aWorld
 outOfWorld: aWorld
   self currentHand removeKeyboardListener: self.
   super outOfWorld: aWorld.
+!
+
+toggleTunnel: tunnel
+  Transcript show: 'Got tunnel '; show: tunnel; cr.
 !
 
 step
@@ -261,6 +297,14 @@ addMorphsTo: parent
   parentMorph addMorph: geometry.
 
   portals do: [:portal | parentMorph addMorph: portal].
+!
+
+portalOverlapsWith: morph
+  portals do: [:portal | 
+    (portal boundsOverlapWith: morph) ifTrue: [^true]
+  ].
+
+  ^false
 ! !
 
 
@@ -303,6 +347,14 @@ buildMap
   "Init the player"
   self addMorph: player.
   player position: (owner position)+ (owner extent / 2).
+!
+
+tunnelInReachOfPlayer
+  tunnels do: [:tunnel |
+    (tunnel portalOverlapsWith: player) ifTrue: [^tunnel]
+  ].
+
+  ^nil
 !
 
 step
@@ -364,4 +416,8 @@ begin
 
 position
   ^ playfield position
+!
+
+playfield
+  ^playfield
 ! !
