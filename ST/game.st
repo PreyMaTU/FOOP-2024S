@@ -404,7 +404,7 @@ stepTime
 
 Object subclass: #GameKeyboard
   instanceVariableNames: 'window keysDown keysPressed'
-  classVariableNames: 'Instance'
+  classVariableNames: ''
   poolDictionaries: ''
   category: 'FOOP' !
 
