@@ -275,6 +275,7 @@ Morph subclass: #Playfield
 initialize
   super initialize.
   self color: (Color green adjustBrightness: -0.2).
+  self clipSubmorphs: true.
 
   tunnels:= OrderedCollection new.
 
