@@ -1,29 +1,7 @@
 
 !Morph methodsFor: 'FOOP'!
 boundsOverlapWith: morph
-  |a b|
-  a:= self bounds.
-  b:= morph bounds.
-
-  "No area means no possbile overlap"
-  (
-    (a corner x- a origin x <= 0) or: (
-    (a corner y - a origin y <= 0) or: (
-    (b corner x- b origin x <= 0) or: (
-    (b corner y - b origin y <= 0) )))
-  ) ifTrue: [
-    ^false
-  ].
-
-  "Hitboxes above or besides each other"
-  (
-    (a origin x > b corner x) or: ( (b origin x > a corner x) or: (
-    (a origin y > b corner y) or: ( (b origin y > a corner y) )))
-  ) ifTrue: [
-    ^false
-  ].
-
-  ^true
+  ^self bounds intersects: morph bounds
 ! !
 
 RectangleMorph subclass: #Cat
