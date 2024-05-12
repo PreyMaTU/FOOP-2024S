@@ -111,7 +111,7 @@ stepTime
 ! !
 
 RectangleMorph subclass: #PlayerMouse
-  instanceVariableNames: 'keys'
+  instanceVariableNames: ''
   classVariableNames: ''
   poolDictionaries: ''
   category: 'FOOP'!
@@ -123,51 +123,6 @@ initialize
   self borderColor: Color blue.
 
   self extent: 28@28.
-
-  keys:= Set new.
-!
-
-handleListenEvent: event
-  | keyName |
-
-  event isKeyboard ifFalse: [
-    ^self
-  ].
-
-  "Get the key type as a string"
-	keyName := event keyString asLowercase.
-  keyName size < 1 ifTrue: [
-    ^self
-  ].
-
-  keyName = ' ' ifTrue: [
-    self toggleTunnel: Game the playfield tunnelInReachOfPlayer.
-    ^self
-  ].
-
-  "Remeber that the key is held down"
-  event isKeyDown ifTrue: [
-    keys add: keyName.
-    ^self
-  ].
-
-  "Remove the key from the set of held keys"
-  event isKeyUp ifTrue: [
-    keys remove: keyName ifAbsent: [].  
-    ^self
-  ].
-!
-
-intoWorld: aWorld
-  super intoWorld: aWorld.
-
-  "Add ourselves as an event listener for keyboard events"
-  self currentHand addKeyboardListener: self.
-!
-
-outOfWorld: aWorld
-  self currentHand removeKeyboardListener: self.
-  super outOfWorld: aWorld.
 !
 
 toggleTunnel: tunnel
@@ -175,16 +130,23 @@ toggleTunnel: tunnel
 !
 
 step
-  | movement |
+  | movement keyboard |
 
   movement:= 0@0.
 
-  (keys includes: 'w') ifTrue: [ movement:= 0@-3 ] ifFalse: [
-  (keys includes: 'a') ifTrue: [ movement:= -3@0 ] ifFalse: [
-  (keys includes: 's') ifTrue: [ movement:= 0@3 ] ifFalse: [
-  (keys includes: 'd') ifTrue: [ movement:= 3@0 ] ]]].
+  keyboard:= Game the keyboard.
+  (keyboard isKeyDown: 'w') ifTrue: [ movement:= 0@-3 ] ifFalse: [
+  (keyboard isKeyDown: 'a') ifTrue: [ movement:= -3@0 ] ifFalse: [
+  (keyboard isKeyDown: 's') ifTrue: [ movement:= 0@3 ] ifFalse: [
+  (keyboard isKeyDown: 'd') ifTrue: [ movement:= 3@0 ] ]]].
 
   self position: self position+ movement.
+
+  (keyboard wasKeyPressed: ' ') ifTrue: [
+    self toggleTunnel: Game the playfield tunnelInReachOfPlayer.
+  ].
+
+  keyboard updateClear.
 !
 
 stepTime
@@ -366,9 +328,78 @@ stepTime
   ^33
 ! !
 
+Object subclass: #GameKeyboard
+  instanceVariableNames: 'window keysDown keysPressed'
+  classVariableNames: 'Instance'
+  poolDictionaries: ''
+  category: 'FOOP' !
+
+!GameKeyboard class methodsFor: ''!
+forWindow: window
+  | keyboard |
+  keyboard:= GameKeyboard new.
+  keyboard window: window.
+  ^keyboard
+! !
+
+!GameKeyboard methodsFor: ''!
+initialize
+  keysDown:= Set new.
+  keysPressed:= Set new.
+!
+
+window: aWindow
+  window ifNotNil: [
+    window currentHand removeKeyboardListener: self
+  ].
+
+  window:= aWindow.
+  window currentHand addKeyboardListener: self.
+!
+
+handleListenEvent: event
+  | keyName |
+
+  (event isKeyboard not or: (window isActive not))  ifTrue: [
+    ^self
+  ].
+
+  "Get the key type as a string"
+	keyName := event keyString asLowercase.
+  keyName size < 1 ifTrue: [
+    ^self
+  ].
+
+  "Remeber that the key is held down"
+  event isKeyDown ifTrue: [
+    keysDown add: keyName.
+    ^self
+  ].
+
+  "Remove the key from the set of held keys"
+  event isKeyUp ifTrue: [
+    (keysDown includes: keyName) ifTrue: [
+      keysDown remove: keyName.
+      keysPressed add: keyName.
+    ].
+    ^self
+  ].
+!
+
+isKeyDown: key
+  ^keysDown includes: key
+!
+
+wasKeyPressed: key
+  ^keysPressed includes: key
+!
+
+updateClear
+  keysPressed removeAll
+! !
 
 Object subclass: #Game
-  instanceVariableNames: 'window playfield'
+  instanceVariableNames: 'window playfield keyboard'
   classVariableNames: 'Instance'
   poolDictionaries: ''
   category: 'FOOP' !
@@ -402,8 +433,10 @@ begin
   "Starts the game by creating all components and entities. This
   mehtod runs after the constructor, so that the singelton instance
   is already available."
-  
+
   Transcript show: 'Begin';cr.
+  keyboard := GameKeyboard forWindow: window.
+
   playfield := Playfield new.
   playfield position: window panelRect origin.
   playfield extent: window panelRect extent.
@@ -420,4 +453,8 @@ position
 
 playfield
   ^playfield
+!
+
+keyboard
+  ^keyboard
 ! !
