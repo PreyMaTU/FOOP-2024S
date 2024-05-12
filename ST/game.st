@@ -1,6 +1,6 @@
 
 RectangleMorph subclass: #Cat
-	instanceVariableNames: ''
+	instanceVariableNames: 'state direction initialPosition pathWidth pathHeight speed'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'FOOP'!
@@ -13,21 +13,74 @@ initialize
 
 	self width: 32.
 	self height: 32.
+
+	state:= #right.
+	direction:= 1@0.
+!
+
+beginPath: path withSpeed: catSpeed
+	initialPosition:= self position - Game the position.
+	pathWidth:= path x.
+	pathHeight:= path y.
+	speed:= catSpeed.
+
+	direction:= direction * speed.
+!
+
+updateState
+	| currentPosition |
+	currentPosition:= self position - Game the position.
+
+	state = #up ifTrue: [ 
+		(currentPosition y <= initialPosition y) ifTrue: [
+			state:= #right.
+			direction:= 1@0 * speed.
+		]
+	] ifFalse: [
+		state = #down ifTrue: [ 
+			(currentPosition y - initialPosition y >= pathHeight) ifTrue: [
+				state:= #left.
+				direction:= -1@0 * speed.
+			]
+		] ifFalse: [
+			state = #left ifTrue: [ 
+				(currentPosition x <= initialPosition x) ifTrue: [
+					state:= #up.
+					direction:= 0@-1 * speed.
+				]
+			] ifFalse: [
+				state = #right ifTrue: [ 
+					(currentPosition x - initialPosition x >= pathWidth) ifTrue: [
+						state:= #down.
+						direction:= 0@1 * speed.
+					]
+				] ifFalse: [
+					Transcript show: 'Error: Unknown state'; show: state; cr.
+				]
+			]
+		]
+	]
 !
 
 move
+	| currentPosition |
+	currentPosition:= self position.
+
 	self width: 32.
 	self height: 32.
 	
+	self position: currentPosition+ direction.
+
 	owner changed.
 !
 
 step
-	self move. 
+	self move.
+	self updateState.
 !
 
 stepTime
-	^1000
+	^33
 ! !
 
 
@@ -141,7 +194,7 @@ addMorphsTo: parent
 
 
 Morph subclass: #Playfield
-	instanceVariableNames: 'window cat tunnels'
+	instanceVariableNames: 'cat tunnels'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'FOOP' !
@@ -152,14 +205,26 @@ initialize
 	self color: (Color green adjustBrightness: -0.2).
 
 	tunnels:= OrderedCollection new.
+
+	cat:= Cat new.
 !
 
-addTunnels
+buildMap
+	owner ifNil: [
+		Transcript show: 'Error: Detached Playfield'.
+		^self
+	].
+
 	"Hard code the layout of the map here"
 	tunnels add: (Tunnel createFrom: {20@20. 80@20. 80@80} connectedBy: { 20@20. 80@20. 80@80. }).
 
 	"Add all the drawables to the render tree"
 	tunnels do: [:tunnel | tunnel addMorphsTo: self].
+
+	"Init the cat"
+	self addMorph: cat.
+	cat position: 320@64 + (owner position).
+	cat beginPath: 60@60 withSpeed: 3.
 !
 
 step
@@ -173,7 +238,7 @@ stepTime
 
 
 Object subclass: #Game
-	instanceVariableNames: 'window playfield cat'
+	instanceVariableNames: 'window playfield'
 	classVariableNames: 'Instance'
 	poolDictionaries: ''
 	category: 'FOOP' !
@@ -212,12 +277,9 @@ begin
 	playfield := Playfield new.
 	playfield position: window panelRect origin.
 	playfield extent: window panelRect extent.
-	playfield addTunnels.
-	window addMorph: playfield.
 
-	cat := Cat new.
-	window addMorph: cat.
-	cat position: 320@64 + window position.
+	window addMorph: playfield.
+	playfield buildMap.
 
 	window openInWorld.
 !
