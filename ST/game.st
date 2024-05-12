@@ -426,7 +426,7 @@ initialize
 
   window position: 100@100.
   window extent: 640@480.
-  window setNameTo: 'FOOP Game'.
+  window setLabel: 'FOOP Game'.
 !
 
 begin
