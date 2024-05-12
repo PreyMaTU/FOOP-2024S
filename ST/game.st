@@ -155,10 +155,19 @@ stepTime
 
 
 CircleMorph subclass: #TunnelPortal
-  instanceVariableNames: ''
+  instanceVariableNames: 'indicator'
   classVariableNames: ''
   poolDictionaries: ''
   category: 'FOOP'!
+
+!TunnelPortal class methodsFor: ''!
+withColor: aColor at: aPosition
+  | portal |
+  portal:= TunnelPortal new.
+  portal tunnelColor: aColor.
+  portal position: aPosition.
+  ^portal
+! !
 
 !TunnelPortal methodsFor: ''!
 initialize
@@ -166,7 +175,23 @@ initialize
   self color: Color gray.
   self borderColor: Color black.
 
-  self extent: 40@40
+  self extent: 40@40.
+
+  indicator:= CircleMorph new.
+  indicator extent: 10@10.
+  self position: self position.
+
+  self addMorph: indicator.
+!
+
+position: aPosition
+  super position: aPosition.
+  indicator position: aPosition + (15@15).
+!
+
+tunnelColor: aColor
+  indicator color: aColor.
+  indicator borderColor: aColor.
 ! !
 
 Morph subclass: #TunnelGeometry
@@ -224,17 +249,17 @@ stepTime
 
 
 Object subclass: #Tunnel
-  instanceVariableNames: 'portals geometry parentMorph'
+  instanceVariableNames: 'portals geometry parentMorph tunnelColor'
   classVariableNames: ''
   poolDictionaries: ''
   category: 'FOOP' !
 
 !Tunnel class methodsFor: ''!
-createFrom: portalPositions connectedBy: vertecies
+withColor: color createFrom: portalPositions connectedBy: vertecies
   "Static constructor helper"
   | tunnel |
   tunnel := Tunnel new.
-  tunnel setPortals: portalPositions setVertecies: vertecies.
+  tunnel setColor: color setPortals: portalPositions setVertecies: vertecies.
   ^tunnel
 ! !
 
@@ -243,10 +268,12 @@ initialize
   portals := OrderedCollection new.
 !
 
-setPortals: portalPositions setVertecies: vertecies
+setColor: aColor setPortals: portalPositions setVertecies: vertecies
   "Populate the tunnel's components"
+  tunnelColor:= aColor.
+
   portalPositions do: [ :position |
-    portals add: (TunnelPortal new position: (Game the position + position) ).
+    portals add: (TunnelPortal withColor: tunnelColor at: (Game the position + position) ).
   ].
 
   geometry:= TunnelGeometry fromVertecies: vertecies
@@ -296,7 +323,8 @@ buildMap
   ].
 
   "Hard code the layout of the map here"
-  tunnels add: (Tunnel createFrom: {20@20. 80@20. 80@80} connectedBy: { 20@20. 80@20. 80@80. }).
+  tunnels add: (Tunnel withColor: (Color red)  createFrom: {20@20. 120@20. 120@80} connectedBy: { 20@20. 120@20. 120@80. }).
+  tunnels add: (Tunnel withColor: (Color blue) createFrom: {30@250. 100@200. 240@240} connectedBy: { 30@250. 100@250. 100@200. 240@200. 240@240 }).
 
   "Add all the drawables to the render tree"
   tunnels do: [:tunnel | tunnel addMorphsTo: self].
@@ -365,7 +393,7 @@ handleListenEvent: event
   ].
 
   "Get the key type as a string"
-	keyName := event keyString asLowercase.
+  keyName := event keyString asLowercase.
   keyName size < 1 ifTrue: [
     ^self
   ].
