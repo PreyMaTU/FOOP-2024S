@@ -79,7 +79,14 @@ move
   owner changed.
 !
 
+tryCatchPlayer
+  (Game the playfield player boundsOverlapWith: self) ifTrue: [
+    Game the setLooseState
+  ]
+!
+
 step
+  self tryCatchPlayer.
   self move.
   self updateState.
 !
@@ -330,6 +337,10 @@ exit
   geometry visible: false
 !
 
+tunnelColor
+  ^tunnelColor
+!
+
 clampPositionToNearestSegment: position
   ^geometry clampPositionToNearestSegment: position
 !
@@ -393,6 +404,14 @@ tunnelInReachOfPlayer
   ^nil
 !
 
+randomTunnelColor
+  ^(tunnels atRandom) tunnelColor
+!
+
+player
+  ^player
+!
+
 step
   "Make sure the game map background has the same dimensions as the window"
   self extent: owner panelRect extent. 
@@ -401,6 +420,65 @@ step
 stepTime
   ^33
 ! !
+
+StaticTextMorph subclass: #GameTimer
+  instanceVariableNames: 'seconds'
+  classVariableNames: ''
+  poolDictionaries: ''
+  category: 'FOOP' !
+
+!GameTimer class methodsFor: ''!
+runFor: seconds
+  | timer |
+  timer:= GameTimer new.
+  timer seconds: seconds.
+  ^timer
+! !
+
+!GameTimer methodsFor: ''!
+initialize
+  super initialize.
+
+  self backgroundColor: Color black.
+  self textColor: Color white.
+!
+
+seconds: secs
+  seconds:= secs.
+  self printTime.
+!
+
+paddedNumberString: aNumber to: zeros
+  | string |
+  string:= aNumber asString.
+  (string size + 1) to: zeros do: [ :i | string := '0', string ].
+  ^string
+!
+
+printTime
+  | secs mins |
+  mins := (seconds / 60) floor.
+  secs := seconds rem: 60.
+
+  mins := self paddedNumberString: mins to: 2.
+  secs := self paddedNumberString: secs to: 2.
+
+  self contents: (mins, ':', secs).
+!
+
+step
+  seconds:= (seconds- 1) max: 0.
+  self printTime.
+
+  (seconds <= 0) ifTrue: [
+    Game the setLooseState
+  ].
+!
+
+stepTime
+  ^1000
+! !
+
 
 Object subclass: #GameKeyboard
   instanceVariableNames: 'window keysDown keysPressed'
@@ -473,7 +551,7 @@ updateClear
 ! !
 
 Object subclass: #Game
-  instanceVariableNames: 'window playfield keyboard currentTunnel'
+  instanceVariableNames: 'window playfield keyboard timer currentTunnel targetTunnelColor state'
   classVariableNames: 'Instance'
   poolDictionaries: ''
   category: 'FOOP' !
@@ -496,6 +574,7 @@ the
 
 !Game methodsFor: ''!
 initialize
+  state:= #running.
   window := SystemWindow new.
 
   window position: 100@100.
@@ -518,6 +597,13 @@ begin
   window addMorph: playfield.
   playfield buildMap.
 
+  timer := GameTimer runFor: 180.
+  timer position: window panelRect origin.
+  window addMorph: timer.
+
+  "Select a random tunnel the player must reach to win"
+  targetTunnelColor:= playfield randomTunnelColor.
+
   window openInWorld.
 !
 
@@ -528,8 +614,30 @@ setTunnel: tunnel
 
   currentTunnel:= tunnel.
   currentTunnel ifNotNil: [
-    currentTunnel enter
+    currentTunnel enter.
+
+    self checkWinState.
   ]
+!
+
+checkWinState
+  (
+    (state = #running) and: (
+    (currentTunnel isNil not) and: (
+    (currentTunnel tunnelColor = targetTunnelColor) ))
+  ) ifTrue: [
+    Transcript show: 'Game won'; cr.
+
+    state:= #won.
+  ].
+!
+
+setLooseState
+  state = #running ifTrue: [
+    Transcript show: 'Game over'; cr.
+
+    state:= #lost.
+  ].
 !
 
 position
