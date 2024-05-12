@@ -83,6 +83,78 @@ stepTime
   ^33
 ! !
 
+CircleMorph subclass: #PlayerMouse
+  instanceVariableNames: 'keys'
+  classVariableNames: ''
+  poolDictionaries: ''
+  category: 'FOOP'!
+
+!PlayerMouse methodsFor: ''!
+initialize
+  super initialize.
+  self color: Color lightBlue.
+  self borderColor: Color blue.
+
+  self extent: 28@28.
+
+  keys:= Set new.
+!
+
+handleListenEvent: event
+  | keyName |
+
+  event isKeyboard ifFalse: [
+    ^self
+  ].
+
+  "Get the key type as a string"
+	keyName := event keyString asLowercase.
+  keyName size < 1 ifTrue: [
+    ^self
+  ].
+
+  "Remeber that the key is held down"
+  event isKeyDown ifTrue: [
+    keys add: keyName.
+    ^self
+  ].
+
+  "Remove the key from the set of held keys"
+  event isKeyUp ifTrue: [
+    keys remove: keyName ifAbsent: [].  
+    ^self
+  ].
+!
+
+intoWorld: aWorld
+  super intoWorld: aWorld.
+
+  "Add ourselves as an event listener for keyboard events"
+  self currentHand addKeyboardListener: self.
+!
+
+outOfWorld: aWorld
+  self currentHand removeKeyboardListener: self.
+  super outOfWorld: aWorld.
+!
+
+step
+  | movement |
+
+  movement:= 0@0.
+
+  (keys includes: 'w') ifTrue: [ movement:= 0@-3 ] ifFalse: [
+  (keys includes: 'a') ifTrue: [ movement:= -3@0 ] ifFalse: [
+  (keys includes: 's') ifTrue: [ movement:= 0@3 ] ifFalse: [
+  (keys includes: 'd') ifTrue: [ movement:= 3@0 ] ]]].
+
+  self position: self position+ movement.
+!
+
+stepTime
+  ^33
+! !
+
 
 CircleMorph subclass: #TunnelPortal
   instanceVariableNames: ''
@@ -194,7 +266,7 @@ addMorphsTo: parent
 
 
 Morph subclass: #Playfield
-  instanceVariableNames: 'cat tunnels'
+  instanceVariableNames: 'cat player tunnels'
   classVariableNames: ''
   poolDictionaries: ''
   category: 'FOOP' !
@@ -207,6 +279,7 @@ initialize
   tunnels:= OrderedCollection new.
 
   cat:= Cat new.
+  player:= PlayerMouse new.
 !
 
 buildMap
@@ -225,6 +298,10 @@ buildMap
   self addMorph: cat.
   cat position: 320@64 + (owner position).
   cat beginPath: 60@60 withSpeed: 3.
+
+  "Init the player"
+  self addMorph: player.
+  player position: (owner position)+ (owner extent / 2).
 !
 
 step
