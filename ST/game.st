@@ -127,6 +127,18 @@ initialize
 
 toggleTunnel: tunnel
   Transcript show: 'Got tunnel '; show: tunnel; cr.
+
+  tunnel ifNotNil: [
+    (Game the currentTunnel == tunnel) ifTrue: [
+      Game the setTunnel: nil.
+      ^self
+    ].
+    
+    Game the currentTunnel ifNil: [
+      Game the setTunnel: tunnel.
+      ^self
+    ].
+  ].
 !
 
 step
@@ -220,7 +232,7 @@ setVertecies: newVertecies
   vertecies := newVertecies	
 !
 
-setVisibility: visibility
+visible: visibility
   visible := visibility	
 !
 
@@ -276,7 +288,8 @@ setColor: aColor setPortals: portalPositions setVertecies: vertecies
     portals add: (TunnelPortal withColor: tunnelColor at: (Game the position + position) ).
   ].
 
-  geometry:= TunnelGeometry fromVertecies: vertecies
+  geometry:= TunnelGeometry fromVertecies: vertecies.
+  geometry visible: false.
 !
 
 addMorphsTo: parent
@@ -286,6 +299,14 @@ addMorphsTo: parent
   parentMorph addMorph: geometry.
 
   portals do: [:portal | parentMorph addMorph: portal].
+!
+
+enter
+  geometry visible: true
+!
+
+exit
+  geometry visible: false
 !
 
 portalOverlapsWith: morph
@@ -427,7 +448,7 @@ updateClear
 ! !
 
 Object subclass: #Game
-  instanceVariableNames: 'window playfield keyboard'
+  instanceVariableNames: 'window playfield keyboard currentTunnel'
   classVariableNames: 'Instance'
   poolDictionaries: ''
   category: 'FOOP' !
@@ -475,6 +496,17 @@ begin
   window openInWorld.
 !
 
+setTunnel: tunnel
+  currentTunnel ifNotNil: [
+    currentTunnel exit
+  ].
+
+  currentTunnel:= tunnel.
+  currentTunnel ifNotNil: [
+    currentTunnel enter
+  ]
+!
+
 position
   ^ playfield position
 !
@@ -485,4 +517,8 @@ playfield
 
 keyboard
   ^keyboard
+!
+
+currentTunnel
+  ^currentTunnel
 ! !
