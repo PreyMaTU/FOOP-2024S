@@ -142,22 +142,33 @@ toggleTunnel: tunnel
 !
 
 step
-  | movement keyboard |
+  | movement newPosition keyboard currentTunnel |
 
   movement:= 0@0.
 
+  "Check which key is pressed"
   keyboard:= Game the keyboard.
   (keyboard isKeyDown: 'w') ifTrue: [ movement:= 0@-3 ] ifFalse: [
   (keyboard isKeyDown: 'a') ifTrue: [ movement:= -3@0 ] ifFalse: [
   (keyboard isKeyDown: 's') ifTrue: [ movement:= 0@3 ] ifFalse: [
   (keyboard isKeyDown: 'd') ifTrue: [ movement:= 3@0 ] ]]].
 
-  self position: self position+ movement.
+  newPosition:= self position+ movement.
 
+  "Enter or leave tunnel when on top of a tunnel portal"
   (keyboard wasKeyPressed: ' ') ifTrue: [
     self toggleTunnel: Game the playfield tunnelInReachOfPlayer.
   ].
 
+  "Clamp position to the tunnel walls when inside one"
+  currentTunnel:= Game the currentTunnel.
+  currentTunnel ifNotNil: [
+    newPosition:= currentTunnel clampPositionToNearestSegment: newPosition.
+  ].
+
+  self position: newPosition.
+
+  "Reset the pressed keys"
   keyboard updateClear.
 !
 
@@ -255,6 +266,38 @@ drawOn: canvas
   ]
 !
 
+clampPositionToNearestSegment: position
+  | closestDistanceSquared closestClampedPoint windowOffset |
+
+  "For a detailed description of this method see the JS version"
+
+  closestDistanceSquared:= Float infinity.
+  closestClampedPoint:= nil.
+  windowOffset:= Game the position.
+
+  1 to: (vertecies size - 1) do: [ :i |
+    | start end segment direction t closestPointOnSegment vectorToclosestPointOnSegment closestDistanceToSegmentSquared |
+    start := windowOffset + vertecies at: i.
+    end := windowOffset + vertecies at: (i + 1).
+    
+    segment := (end - start).
+    direction := (position - start).
+
+    t:= ((direction dotProduct: segment) / (segment dotProduct: segment)) min: 1 max: 0.
+
+    closestPointOnSegment:= start + (segment * t).
+    vectorToclosestPointOnSegment:= position - closestPointOnSegment.
+    closestDistanceToSegmentSquared:= vectorToclosestPointOnSegment dotProduct: vectorToclosestPointOnSegment.
+
+    (closestDistanceToSegmentSquared < closestDistanceSquared) ifTrue: [
+      closestDistanceSquared:= closestDistanceToSegmentSquared.
+      closestClampedPoint:= closestPointOnSegment.
+    ].
+  ].
+
+  ^closestClampedPoint
+!
+
 stepTime
   ^33
 ! !
@@ -307,6 +350,10 @@ enter
 
 exit
   geometry visible: false
+!
+
+clampPositionToNearestSegment: position
+  ^geometry clampPositionToNearestSegment: position
 !
 
 portalOverlapsWith: morph
