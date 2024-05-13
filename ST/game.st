@@ -412,6 +412,13 @@ player
   ^player
 !
 
+outOfWorld: aWorld
+  super outOfWorld: aWorld.
+
+  Transcript show: 'Playfield removed'.
+  Game the shutdown: true.
+!
+
 step
   "Make sure the game map background has the same dimensions as the window"
   self extent: owner panelRect extent. 
@@ -446,6 +453,10 @@ initialize
 seconds: secs
   seconds:= secs.
   self printTime.
+!
+
+clear
+ self seconds: 0.
 !
 
 paddedNumberString: aNumber to: zeros
@@ -500,10 +511,15 @@ initialize
   keysPressed:= Set new.
 !
 
+detach
+   window ifNotNil: [
+    window currentHand removeKeyboardListener: self.
+    window := nil.
+  ]
+!
+
 window: aWindow
-  window ifNotNil: [
-    window currentHand removeKeyboardListener: self
-  ].
+ self detach.
 
   window:= aWindow.
   window currentHand addKeyboardListener: self.
@@ -560,7 +576,8 @@ Object subclass: #Game
 "Helpers for the Game singelton"
 create
   Instance ifNotNil: [
-    Transcript show: 'Replacing old instance';cr.	
+    Transcript show: 'Replacing old instance';cr.
+    Instance shutdown.
   ].
 
   Transcript show: 'Starting game...';cr.
@@ -605,6 +622,20 @@ begin
   targetTunnelColor:= playfield randomTunnelColor.
 
   window openInWorld.
+!
+
+shutdown
+  self shutdown: false
+!
+
+shutdown: dueToWindowClose
+  keyboard detach.
+  timer clear.
+  state := #lost.
+
+  dueToWindowClose ifFalse: [
+    window delete.
+  ].
 !
 
 setTunnel: tunnel
