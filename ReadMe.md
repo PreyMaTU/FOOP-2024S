@@ -26,10 +26,10 @@ Compared to the JS version there is only a single player mode and one cat that c
 player. To run the game, you need to first acquire [Squeak](https://squeak.org/downloads/) and
 start it.
 
-Then left click on the desktop and select "open...", which will display another context menu.
-Here select "file list" and navigate to the folder `/ST`. Select the `game.st` file and
-click the "filein" button. Now the game code is loaded. Finally, open den drop down on top
-of the desktop and click "Workspace". Here type the following command:
+Then open the "Tools" drop down on top of the desktop and click "File List" (at the very
+bottom of the list). In the explorer window navigate to the folder `/ST`. Select the `game.st`
+file and click the "filein" button. Now the game code is loaded. Finally, again in the "Tools"
+drop down click "Workspace". Here type the following command:
 
 ```
 Game create.
