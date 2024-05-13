@@ -5,7 +5,7 @@ boundsOverlapWith: morph
 ! !
 
 RectangleMorph subclass: #Cat
-  instanceVariableNames: 'state direction initialPosition pathWidth pathHeight speed'
+  instanceVariableNames: 'direction speed lastOvergroundPlayerPosition'
   classVariableNames: ''
   poolDictionaries: ''
   category: 'FOOP'!
@@ -19,52 +19,29 @@ initialize
   self width: 32.
   self height: 32.
 
-  state:= #right.
-  direction:= 1@0.
+  direction:= 0@0.
 !
 
-beginPath: path withSpeed: catSpeed
-  initialPosition:= self position - Game the position.
-  pathWidth:= path x.
-  pathHeight:= path y.
+withSpeed: catSpeed
   speed:= catSpeed.
 
   direction:= direction * speed.
 !
 
 updateState
-  | currentPosition |
-  currentPosition:= self position - Game the position.
+  | vector |
 
-  state = #up ifTrue: [ 
-    (currentPosition y <= initialPosition y) ifTrue: [
-      state:= #right.
-      direction:= 1@0 * speed.
-    ]
+  Game the currentTunnel ifNil: [
+    lastOvergroundPlayerPosition := Game the playfield player position - Game the position.
+  ].
+
+  vector := lastOvergroundPlayerPosition - (self position - Game the position).
+  (vector dotProduct: vector) < speed ifTrue: [
+    direction:= vector.
+
   ] ifFalse: [
-    state = #down ifTrue: [ 
-      (currentPosition y - initialPosition y >= pathHeight) ifTrue: [
-        state:= #left.
-        direction:= -1@0 * speed.
-      ]
-    ] ifFalse: [
-      state = #left ifTrue: [ 
-        (currentPosition x <= initialPosition x) ifTrue: [
-          state:= #up.
-          direction:= 0@-1 * speed.
-        ]
-      ] ifFalse: [
-        state = #right ifTrue: [ 
-          (currentPosition x - initialPosition x >= pathWidth) ifTrue: [
-            state:= #down.
-            direction:= 0@1 * speed.
-          ]
-        ] ifFalse: [
-          Transcript show: 'Error: Unknown state'; show: state; cr.
-        ]
-      ]
-    ]
-  ]
+    direction:= vector normalized * speed.
+  ].
 !
 
 move
@@ -80,7 +57,10 @@ move
 !
 
 tryCatchPlayer
-  (Game the playfield player boundsOverlapWith: self) ifTrue: [
+  (
+    (Game the currentTunnel isNil) and:
+    (Game the playfield player boundsOverlapWith: self)
+  ) ifTrue: [
     Game the setLooseState
   ]
 !
