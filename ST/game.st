@@ -365,8 +365,26 @@ buildMap
   ].
 
   "Hard code the layout of the map here"
-  tunnels add: (Tunnel withColor: (Color red)  createFrom: {20@20. 120@20. 120@80} connectedBy: { 20@20. 120@20. 120@80. }).
-  tunnels add: (Tunnel withColor: (Color blue) createFrom: {30@250. 100@200. 240@240} connectedBy: { 30@250. 100@250. 100@200. 240@200. 240@240 }).
+  tunnels add: (Tunnel
+    withColor: (Color red)
+    createFrom: {20@20. 120@20. 120@80}
+    connectedBy: { 20@20. 120@20. 120@80. }
+  ).
+  tunnels add: (Tunnel 
+    withColor: (Color blue) 
+    createFrom: {30@250. 100@200. 240@240} 
+    connectedBy: { 30@250. 100@250. 100@200. 240@200. 240@240 }
+  ).
+  tunnels add: (Tunnel 
+    withColor: (Color green) 
+    createFrom: {300@250. 380@290} 
+    connectedBy: { 300@250. 300@180. 450@180. 450@230. 360@230. 360@290. 380@290 }
+  ).
+  tunnels add: (Tunnel 
+    withColor: (Color orange) 
+    createFrom: {240@30. 550@30. 550@240. 400@130} 
+    connectedBy: { 240@30. 550@30. 550@240. 400@240. 400@130 }
+  ).
 
   "Add all the drawables to the render tree"
   tunnels do: [:tunnel | tunnel addMorphsTo: self].
