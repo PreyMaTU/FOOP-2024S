@@ -129,29 +129,32 @@ toggleTunnel: tunnel
 step
   | movement newPosition keyboard currentTunnel |
 
-  movement:= 0@0.
-
-  "Check which key is pressed"
   keyboard:= Game the keyboard.
-  (keyboard isKeyDown: 'w') ifTrue: [ movement:= 0@-3 ] ifFalse: [
-  (keyboard isKeyDown: 'a') ifTrue: [ movement:= -3@0 ] ifFalse: [
-  (keyboard isKeyDown: 's') ifTrue: [ movement:= 0@3 ] ifFalse: [
-  (keyboard isKeyDown: 'd') ifTrue: [ movement:= 3@0 ] ]]].
 
-  newPosition:= self position+ movement.
+  Game the stillRunning ifTrue: [
+    movement:= 0@0.
 
-  "Enter or leave tunnel when on top of a tunnel portal"
-  (keyboard wasKeyPressed: ' ') ifTrue: [
-    self toggleTunnel: Game the playfield tunnelInReachOfPlayer.
+    "Check which key is pressed"
+    (keyboard isKeyDown: 'w') ifTrue: [ movement:= 0@-3 ] ifFalse: [
+    (keyboard isKeyDown: 'a') ifTrue: [ movement:= -3@0 ] ifFalse: [
+    (keyboard isKeyDown: 's') ifTrue: [ movement:= 0@3 ] ifFalse: [
+    (keyboard isKeyDown: 'd') ifTrue: [ movement:= 3@0 ] ]]].
+
+    newPosition:= self position+ movement.
+
+    "Enter or leave tunnel when on top of a tunnel portal"
+    (keyboard wasKeyPressed: ' ') ifTrue: [
+      self toggleTunnel: Game the playfield tunnelInReachOfPlayer.
+    ].
+
+    "Clamp position to the tunnel walls when inside one"
+    currentTunnel:= Game the currentTunnel.
+    currentTunnel ifNotNil: [
+      newPosition:= currentTunnel clampPositionToNearestSegment: newPosition.
+    ].
+
+    self position: newPosition.
   ].
-
-  "Clamp position to the tunnel walls when inside one"
-  currentTunnel:= Game the currentTunnel.
-  currentTunnel ifNotNil: [
-    newPosition:= currentTunnel clampPositionToNearestSegment: newPosition.
-  ].
-
-  self position: newPosition.
 
   "Reset the pressed keys"
   keyboard updateClear.
@@ -653,7 +656,7 @@ setTunnel: tunnel
 
 checkWinState
   (
-    (state = #running) and: (
+    (self stillRunning) and: (
     (currentTunnel isNil not) and: (
     (currentTunnel tunnelColor = targetTunnelColor) ))
   ) ifTrue: [
@@ -664,11 +667,15 @@ checkWinState
 !
 
 setLooseState
-  state = #running ifTrue: [
+  self stillRunning ifTrue: [
     Transcript show: 'Game over'; cr.
 
     state:= #lost.
   ].
+!
+
+stillRunning
+  ^state = #running
 !
 
 position
