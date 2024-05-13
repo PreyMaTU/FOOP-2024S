@@ -35,6 +35,8 @@ updateState
     lastOvergroundPlayerPosition := Game the playfield player position - Game the position.
   ].
 
+  lastOvergroundPlayerPosition ifNil: [^self].
+
   vector := lastOvergroundPlayerPosition - (self position - Game the position).
   (vector dotProduct: vector) < speed ifTrue: [
     direction:= vector.
