@@ -493,6 +493,62 @@ stepTime
   ^1000
 ! !
 
+RectangleMorph subclass: #TextBanner
+  instanceVariableNames: 'text fontName fontSize'
+  classVariableNames: ''
+  poolDictionaries: ''
+  category: 'FOOP' !
+
+!TextBanner methodsFor: ''!
+initialize
+  super initialize.
+
+  self color: Color black.
+  self borderColor: Color black.
+  
+  fontName := (TextStyle defaultFont familyName).
+  fontSize := 60.
+  
+  text := StaticTextMorph new.
+  text textColor: Color white.
+
+  self addMorph: text.
+!
+
+message: message
+  text string: message fontName: fontName size: fontSize.
+  self alignSelf.
+!
+
+alignSelf
+  | win textHeight padding posX posY|
+
+  textHeight:= 50.
+  padding := 20.
+  win := owner panelRect.
+
+  posX := win origin x.
+  posY := win origin y + (win extent y / 2) - ((textHeight + padding)/ 2 ).
+
+  "Place ourself as a y-centered banner across the window"
+  self
+    extent: (win extent x)@(textHeight+ 10);
+    position: (posX@posY) asIntegerPoint.
+
+  "Put the text onto the banner with padding offset"
+  text
+    position: self position + (0@(padding / 2));
+    extent: (self extent x)@fontSize;
+    centered.
+!
+
+step
+  self alignSelf.
+!
+
+stepTime
+  ^33
+! !
 
 Object subclass: #GameKeyboard
   instanceVariableNames: 'window keysDown keysPressed'
@@ -663,6 +719,7 @@ checkWinState
     Transcript show: 'Game won'; cr.
 
     state:= #won.
+    self showGameOverMessage.
   ].
 !
 
@@ -671,7 +728,18 @@ setLooseState
     Transcript show: 'Game over'; cr.
 
     state:= #lost.
+    self showGameOverMessage.
   ].
+!
+
+showGameOverMessage
+  | message banner |
+  
+  message := state = #won ifTrue: ['Game won'] ifFalse: ['Game lost'].
+
+  banner:= TextBanner new.
+  window addMorph: banner.
+  banner message: message.
 !
 
 stillRunning
