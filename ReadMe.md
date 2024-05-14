@@ -38,6 +38,11 @@ Game create.
 With the cursor remaining in the same line as the above command press `Ctrl`+`D` (`Cmd`+`D`).
 The game's window should now be visible.
 
+
+### Eiffel
+The third version of the game is written in Eiffel. For project setup and build instructions see
+the `ReadMe` file in the `Eiffel` directory.
+
 ## Group "P"
 This project is worked on by the following team members:
 
