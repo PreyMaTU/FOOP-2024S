@@ -1,5 +1,6 @@
 
 !Morph methodsFor: 'FOOP'!
+"Check whether the bounds of this and another morph's intersect"
 boundsOverlapWith: morph
   ^self bounds intersects: morph bounds
 ! !
@@ -11,6 +12,7 @@ RectangleMorph subclass: #Cat
   category: 'FOOP'!
 
 !Cat methodsFor: ''!
+"Construct a new cat as a red rectangle with no movement by default"
 initialize
   super initialize.
   self color: Color lightRed.
@@ -22,21 +24,27 @@ initialize
   direction:= 0@0.
 !
 
+"Sets the cat's movement speed"
 withSpeed: catSpeed
   speed:= catSpeed.
 
   direction:= direction * speed.
 !
 
+"Updates the state of the cat in the current step. The cat tries to follow the
+player mouse as long as it is visible overground."
 updateState
   | vector |
 
+  "Check if player is currently visible/overground"
   Game the currentTunnel ifNil: [
     lastOvergroundPlayerPosition := Game the playfield player position - Game the position.
   ].
 
   lastOvergroundPlayerPosition ifNil: [^self].
 
+  "Move towards the last known player position, without jumping past it to prevent
+  oscillation."
   vector := lastOvergroundPlayerPosition - (self position - Game the position).
   (vector dotProduct: vector) < speed ifTrue: [
     direction:= vector.
@@ -46,6 +54,7 @@ updateState
   ].
 !
 
+"Moves the cat according to direction vector."
 move
   | currentPosition |
   currentPosition:= self position.
@@ -58,6 +67,8 @@ move
   owner changed.
 !
 
+"End the game if boundaries of player and cat overlap. 
+Only if player is not in a tunnel."
 tryCatchPlayer
   (
     (Game the currentTunnel isNil) and:
@@ -67,6 +78,7 @@ tryCatchPlayer
   ]
 !
 
+"Customized draw method to hide cat when player is underground"
 drawOn: aCanvas
   "Do not show the cat when the player is underground"
   Game the currentTunnel ifNil: [
@@ -74,12 +86,14 @@ drawOn: aCanvas
   ].
 !
 
+"Update the cat each step"
 step
   self tryCatchPlayer.
   self move.
   self updateState.
 !
 
+"Update 30 times per second"
 stepTime
   ^33
 ! !
@@ -91,6 +105,7 @@ RectangleMorph subclass: #PlayerMouse
   category: 'FOOP'!
 
 !PlayerMouse methodsFor: ''!
+"Construct a new player mouse as a blue rectangle"
 initialize
   super initialize.
   self color: Color lightBlue.
@@ -99,15 +114,20 @@ initialize
   self extent: 28@28.
 !
 
+"Set the tunnel the player mouse is currently in. If the player already is underground the tunnel is left
+and therefore the games tunnel field gets reset. When underground the rendering of the underground 
+geometry is enabled."
 toggleTunnel: tunnel
   Transcript show: 'Got tunnel '; show: tunnel; cr.
 
   tunnel ifNotNil: [
+    "Leaving the current tunnel"
     (Game the currentTunnel == tunnel) ifTrue: [
       Game the setTunnel: nil.
       ^self
     ].
     
+    "Entering a new tunnel"
     Game the currentTunnel ifNil: [
       Game the setTunnel: tunnel.
       ^self
@@ -115,6 +135,8 @@ toggleTunnel: tunnel
   ].
 !
 
+"Update the player mouse each step. The mouse is moved based on keyboard inputs. When
+pressing the space bar on top of a tunnel portal, the tunnel is entered/left."
 step
   | movement newPosition keyboard currentTunnel |
 
@@ -149,6 +171,7 @@ step
   keyboard updateClear.
 !
 
+"Update 30 times per second"
 stepTime
   ^33
 ! !
@@ -161,6 +184,7 @@ CircleMorph subclass: #TunnelPortal
   category: 'FOOP'!
 
 !TunnelPortal class methodsFor: ''!
+"Static constructor for a tunnel with a color and position"
 withColor: aColor at: aPosition
   | portal |
   portal:= TunnelPortal new.
@@ -170,6 +194,7 @@ withColor: aColor at: aPosition
 ! !
 
 !TunnelPortal methodsFor: ''!
+"Contruct a new tunnel portal with predefined color and position"
 initialize
   super initialize.
   self color: Color gray.
@@ -177,6 +202,7 @@ initialize
 
   self extent: 40@40.
 
+  "Add the colored indicator dot in the middle"
   indicator:= CircleMorph new.
   indicator extent: 10@10.
   self position: self position.
@@ -184,11 +210,13 @@ initialize
   self addMorph: indicator.
 !
 
+"Set the position of the tunnel portal"
 position: aPosition
   super position: aPosition.
   indicator position: aPosition + (15@15).
 !
 
+"Set the color of the tunnel protal"
 tunnelColor: aColor
   indicator color: aColor.
   indicator borderColor: aColor.
@@ -201,6 +229,7 @@ instanceVariableNames: 'vertecies visible'
   category: 'FOOP'!
 
 !TunnelGeometry class methodsFor: ''!
+"Static constructor to create a tunnel geometry with vertecies"
 fromVertecies: vertecies
   | geometry |
   geometry := TunnelGeometry new.
@@ -209,6 +238,7 @@ fromVertecies: vertecies
 ! !
 
 !TunnelGeometry methodsFor: ''!
+"Construct a new tunnel geometry at a predefined position"
 initialize
   super initialize.
 
@@ -216,14 +246,18 @@ initialize
   visible:= true.
 !
 
+"Set the vertecies of the tunnel geometry"
 setVertecies: newVertecies
   vertecies := newVertecies	
 !
 
+"Set the visibility flag. When visible the geometry gets drawn."
 visible: visibility
   visible := visibility	
 !
 
+"Draw the geometry as thick lines between the tunnel portals based on the vertecies
+directly on to the canvas."
 drawOn: canvas
   visible ifTrue: [
     "Draw the geometry as a series of overlapping rectangles"
@@ -243,6 +277,7 @@ drawOn: canvas
   ]
 !
 
+"Compute the nearest position inside the tunnel geometry"
 clampPositionToNearestSegment: position
   | closestDistanceSquared closestClampedPoint windowOffset |
 
@@ -275,6 +310,7 @@ clampPositionToNearestSegment: position
   ^closestClampedPoint
 !
 
+"Update 30 times per second"
 stepTime
   ^33
 ! !
@@ -287,8 +323,9 @@ Object subclass: #Tunnel
   category: 'FOOP' !
 
 !Tunnel class methodsFor: ''!
+"Static constructor to create a tunnel with a color, positions of the portals and vertices
+to define the underground geometry"
 withColor: color createFrom: portalPositions connectedBy: vertecies
-  "Static constructor helper"
   | tunnel |
   tunnel := Tunnel new.
   tunnel setColor: color setPortals: portalPositions setVertecies: vertecies.
@@ -300,18 +337,21 @@ initialize
   portals := OrderedCollection new.
 !
 
+"Populate all fields of the tunnel. Used by the static constructor to initialize the object"
 setColor: aColor setPortals: portalPositions setVertecies: vertecies
-  "Populate the tunnel's components"
   tunnelColor:= aColor.
 
+  "Add all the portals"
   portalPositions do: [ :position |
     portals add: (TunnelPortal withColor: tunnelColor at: (Game the position + position) ).
   ].
 
+  "Create the geometry"
   geometry:= TunnelGeometry fromVertecies: vertecies.
   geometry visible: false.
 !
 
+"Adds the tunnel's mophs to a provided parent morph for displaying."
 addMorphsTo: parent
   parentMorph := parent.
 
@@ -321,22 +361,27 @@ addMorphsTo: parent
   portals do: [:portal | parentMorph addMorph: portal].
 !
 
+"Turn the undergound geometry visible when entering the tunnel"
 enter
   geometry visible: true
 !
 
+"Turn the undergound geometry invisible when leaving the tunnel"
 exit
   geometry visible: false
 !
 
+"Get the tunnel indicator color"
 tunnelColor
   ^tunnelColor
 !
 
+"Clamps a position on the playfield to the nearest position inside the tunnel geometry"
 clampPositionToNearestSegment: position
   ^geometry clampPositionToNearestSegment: position
 !
 
+"Check if a morph overlaps with any of the tunnel's portal"
 portalOverlapsWith: morph
   portals do: [:portal | 
     (portal boundsOverlapWith: morph) ifTrue: [^true]
@@ -354,6 +399,7 @@ Morph subclass: #Playfield
   category: 'FOOP' !
 
 !Playfield methodsFor: ''!
+"Construct the playfield with a background color, tunnels, a cat and a player mouse"
 initialize
   super initialize.
   self color: (Color green adjustBrightness: -0.2).
@@ -365,13 +411,14 @@ initialize
   player:= PlayerMouse new.
 !
 
+"Build the contents of the playfield by instantiating the player, cat and tunnels."
 buildMap
   owner ifNil: [
     Transcript show: 'Error: Detached Playfield'.
     ^self
   ].
 
-  "Hard code the layout of the map here"
+  "Hard code the layout of the map"
   tunnels add: (Tunnel
     withColor: (Color red)
     createFrom: {20@20. 120@20. 120@80}
@@ -406,6 +453,7 @@ buildMap
   player position: (owner position)+ (owner extent / 2).
 !
 
+"Try to find a tunnel the player mouse can interact with, or return nil."
 tunnelInReachOfPlayer
   tunnels do: [:tunnel |
     (tunnel portalOverlapsWith: player) ifTrue: [^tunnel]
@@ -414,14 +462,19 @@ tunnelInReachOfPlayer
   ^nil
 !
 
+"Get a random tunnel indicator color"
 randomTunnelColor
   ^(tunnels atRandom) tunnelColor
 !
 
+"Get the player mouse object"
 player
   ^player
 !
 
+"Detect that the game window is closing. Unfortunately there seems to be no way to
+set a callback on the SystemWindow itself, so we need to employ this hack to inform
+the game to shutdown."
 outOfWorld: aWorld
   super outOfWorld: aWorld.
 
@@ -429,11 +482,13 @@ outOfWorld: aWorld
   Game the shutdown: true.
 !
 
+"Update the playfield each step."
 step
   "Make sure the game map background has the same dimensions as the window"
   self extent: owner panelRect extent. 
 !
 
+"Update 30 times per second"
 stepTime
   ^33
 ! !
@@ -445,6 +500,8 @@ StaticTextMorph subclass: #GameTimer
   category: 'FOOP' !
 
 !GameTimer class methodsFor: ''!
+"Static Constructor for a game timer with a game duration.
+The Game ends after the given time specified in seconds"
 runFor: seconds
   | timer |
   timer:= GameTimer new.
@@ -460,15 +517,18 @@ initialize
   self textColor: Color white.
 !
 
+"Set the number of remaining seconds before the game ends."
 seconds: secs
   seconds:= secs.
   self printTime.
 !
 
+"Clear the timer. Sets the seconds to 0."
 clear
  self seconds: 0.
 !
 
+"Print a number with a specified number of padded zeros"
 paddedNumberString: aNumber to: zeros
   | string |
   string:= aNumber asString.
@@ -476,6 +536,7 @@ paddedNumberString: aNumber to: zeros
   ^string
 !
 
+"Display the currently remaining time as a formated mm:ss string."
 printTime
   | secs mins |
   mins := (seconds / 60) floor.
@@ -487,15 +548,19 @@ printTime
   self contents: (mins, ':', secs).
 !
 
+"Decrease the timer by a second each step.
+When the timer over, the game is lost"
 step
   seconds:= (seconds- 1) max: 0.
   self printTime.
 
+  "End the game when no time is left"
   (seconds <= 0) ifTrue: [
     Game the setLooseState
   ].
 !
 
+"Update the timer every second"
 stepTime
   ^1000
 ! !
@@ -507,6 +572,8 @@ RectangleMorph subclass: #TextBanner
   category: 'FOOP' !
 
 !TextBanner methodsFor: ''!
+"Construct a Textbanner with black background which spans the window horizantally
+and has a centered text."
 initialize
   super initialize.
 
@@ -522,11 +589,14 @@ initialize
   self addMorph: text.
 !
 
+"Set the message to display inside the banner"
 message: message
   text string: message fontName: fontName size: fontSize.
   self alignSelf.
 !
 
+"Compute own position and the position of the contained text based
+on the windows position and extent."
 alignSelf
   | win textHeight padding posX posY|
 
@@ -549,10 +619,12 @@ alignSelf
     centered.
 !
 
+"Re-align the textbanner within the window each step"
 step
   self alignSelf.
 !
 
+"Update 30 times per second"
 stepTime
   ^33
 ! !
@@ -564,6 +636,7 @@ Object subclass: #GameKeyboard
   category: 'FOOP' !
 
 !GameKeyboard class methodsFor: ''!
+"Static constructor for binding the keyboard listener to the window"
 forWindow: window
   | keyboard |
   keyboard:= GameKeyboard new.
@@ -577,6 +650,7 @@ initialize
   keysPressed:= Set new.
 !
 
+"Detach the keyboard listener from the window if one is currently set"
 detach
    window ifNotNil: [
     window currentHand removeKeyboardListener: self.
@@ -584,6 +658,7 @@ detach
   ]
 !
 
+"Attach the keyboard listener to a new window after detaching from the old one."
 window: aWindow
  self detach.
 
@@ -591,9 +666,11 @@ window: aWindow
   window currentHand addKeyboardListener: self.
 !
 
+"Callback for receiving input events"
 handleListenEvent: event
   | keyName |
 
+  "Only process keyboard events when the window is active"
   (event isKeyboard not or: (window isActive not))  ifTrue: [
     ^self
   ].
@@ -620,14 +697,17 @@ handleListenEvent: event
   ].
 !
 
+"Check if a key is currently held down"
 isKeyDown: key
   ^keysDown includes: key
 !
 
+"Check if a key was pressed since last clearing update"
 wasKeyPressed: key
   ^keysPressed includes: key
 !
 
+"Clear the pressed keys set"
 updateClear
   keysPressed removeAll
 ! !
@@ -639,7 +719,7 @@ Object subclass: #Game
   category: 'FOOP' !
 
 !Game class methodsFor: ''!
-"Helpers for the Game singelton"
+"Create a new game as a singleton and replace an old instace if one exists"
 create
   Instance ifNotNil: [
     Transcript show: 'Replacing old instance';cr.
@@ -651,6 +731,7 @@ create
   Instance begin.
 !
 
+"Returns the instance of the game"
 the
   ^Instance
 ! !
@@ -665,14 +746,14 @@ initialize
   window setLabel: 'FOOP Game'.
 !
 
+"Starts the game by creating all components and entities. This
+mehtod runs after the constructor, so that the singelton instance
+is already available."
 begin
-  "Starts the game by creating all components and entities. This
-  mehtod runs after the constructor, so that the singelton instance
-  is already available."
-
   Transcript show: 'Begin';cr.
   keyboard := GameKeyboard forWindow: window.
 
+  "Set up playfield"
   playfield := Playfield new.
   playfield position: window panelRect origin.
   playfield extent: window panelRect extent.
@@ -680,6 +761,7 @@ begin
   window addMorph: playfield.
   playfield buildMap.
 
+  "Set up and start timer"
   timer := GameTimer runFor: 180.
   timer position: window panelRect origin.
   window addMorph: timer.
@@ -690,10 +772,13 @@ begin
   window openInWorld.
 !
 
+"Shut down the game programmatically"
 shutdown
   self shutdown: false
 !
 
+"Shut down the game by detaching event listeners, stopping the timer and cllosing the window.
+When the game stops due to closing the window, we cannot close it again."
 shutdown: dueToWindowClose
   keyboard ifNotNil: [ keyboard detach ].
   timer ifNotNil: [ timer clear ].
@@ -704,6 +789,8 @@ shutdown: dueToWindowClose
   ].
 !
 
+"Leave the tunnel if the player mouse is currently inside one.
+Enter the tunnel if the mouse is outside and check if it was the winning tunnel"
 setTunnel: tunnel
   currentTunnel ifNotNil: [
     currentTunnel exit
@@ -717,6 +804,8 @@ setTunnel: tunnel
   ]
 !
 
+"Check whether the game is won. The game has to be still running and the player mouse
+has to be in the right tunnel."
 checkWinState
   (
     (self stillRunning) and: (
@@ -730,6 +819,7 @@ checkWinState
   ].
 !
 
+"Set the game to lost and show the game over message onscreen."
 setLooseState
   self stillRunning ifTrue: [
     Transcript show: 'Game over'; cr.
@@ -739,6 +829,8 @@ setLooseState
   ].
 !
 
+"Print the respective game over banner onscreen. Either displays 'Game won'
+or 'Game lost' as a banner text based on the game state."
 showGameOverMessage
   | message banner |
   
@@ -749,22 +841,27 @@ showGameOverMessage
   banner message: message.
 !
 
+"Check whether the game is still running."
 stillRunning
   ^state = #running
 !
 
+"Get the position of the playfield in the world"
 position
   ^ playfield position
 !
 
+"Get the playfield object"
 playfield
   ^playfield
 !
 
+"Get the keyboard object"
 keyboard
   ^keyboard
 !
 
+"Get the current tunnel object or nil."
 currentTunnel
   ^currentTunnel
 ! !
