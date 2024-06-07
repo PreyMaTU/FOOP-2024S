@@ -67,6 +67,13 @@ tryCatchPlayer
   ]
 !
 
+drawOn: aCanvas
+  "Do not show the cat when the player is underground"
+  Game the currentTunnel ifNil: [
+    super drawOn: aCanvas.
+  ].
+!
+
 step
   self tryCatchPlayer.
   self move.
