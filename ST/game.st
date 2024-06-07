@@ -688,11 +688,11 @@ shutdown
 !
 
 shutdown: dueToWindowClose
-  keyboard detach.
-  timer clear.
+  keyboard ifNotNil: [ keyboard detach ].
+  timer ifNotNil: [ timer clear ].
   state := #lost.
 
-  dueToWindowClose ifFalse: [
+  (dueToWindowClose not and: (window isNil not)) ifTrue: [
     window delete.
   ].
 !
