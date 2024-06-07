@@ -392,7 +392,7 @@ buildMap
   "Init the cat"
   self addMorph: cat.
   cat position: 320@64 + (owner position).
-  cat beginPath: 60@60 withSpeed: 3.
+  cat withSpeed: 3.
 
   "Init the player"
   self addMorph: player.
