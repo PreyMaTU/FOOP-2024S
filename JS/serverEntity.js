@@ -2,8 +2,15 @@
 import { RunningDirection } from './public/actors.js'
 import { Vector } from './public/util.js'
 
+/**
+ * Simple 2D integer position to describe the location of entities on
+ * the map.
+ */
 export class Position {
   /**
+   * Either act as a copy constructor or create a new position from
+   * x and y values.
+   * 
    * @param {number | Position} x 
    * @param {number} y 
    */
@@ -28,10 +35,13 @@ export class Position {
     return new Position( this )
   }
 
+  // Convert to a positional vector instance
   vector() {
     return new Vector( this.x, this.y )
   }
 
+  // Move the Position by the given value
+  // Takes either separate x and y values or a Vector as input 
   move( vec, y ) {
     if( vec instanceof Vector ) {
       this.x+= vec.x
@@ -45,6 +55,8 @@ export class Position {
     return this
   }
 
+  // Compute the current running direction based on a previous
+  // position object
   runningDirection( previous ) {
     const dx= this.x - previous.x
     const dy= this.y - previous.y
@@ -66,6 +78,10 @@ export class Position {
   }
 }
 
+/**
+ * Base class for moving server entities. Has an id, position and tracks its
+ * running direction.
+ */
 class ServerEntity {
   #id
   #position
@@ -89,6 +105,10 @@ class ServerEntity {
   }
 }
 
+/**
+ * Class for the player entities (mice) connected to the game
+ * as clients.
+ */
 export class Player extends ServerEntity {
   #vote
   #tunnel
@@ -108,6 +128,7 @@ export class Player extends ServerEntity {
   get tunnel() { return this.#tunnel }
   get alive() { return this.#alive }
 
+  // Return the current vote only if the player is in a tunnel 
   get vote() {
     return this.#tunnel && this.#vote
       ? { tunnel: this.#tunnel, vote: this.#vote } : null
@@ -139,6 +160,10 @@ export class Player extends ServerEntity {
   }
 }
 
+/**
+ * Cat NPC entity that tries to catch the player entities. The behavior is controlled
+ * by a plugable brain instance, that is called every update cycle.
+ */
 export class ServerCat extends ServerEntity {
   #brain
 

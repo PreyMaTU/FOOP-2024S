@@ -5,6 +5,11 @@ import { PlayerMouse, Cat, MateMouse } from './actors.js'
 import { Vector } from './util.js'
 import * as States from './state.js'
 
+/**
+ * The portal entity of a tunnel displayed overground. Players can
+ * access the tunnel through the portal. Consists of an arch with
+ * a colored dot to associate it with a tunnel.
+ */
 class TunnelPortal extends Entity {
   #sprite
   #hitbox
@@ -30,6 +35,11 @@ class TunnelPortal extends Entity {
   }
 }
 
+/**
+ * The underground structure of a tunnel. Players can move along the tunnel geometry
+ * when they are inside the tunnel. The geometry is specified as an array of 2D 
+ * vertices that get connected by straight lines.
+ */
 class TunnelGeometry {
   constructor( vertices ) {
     this.vertices= vertices
@@ -80,10 +90,17 @@ class TunnelGeometry {
   }
 }
 
+/**
+ * Tunnels have a certain color and can be entered by players. Multiple
+ * mice can reside in a tunnel at once. When overground only the tunnels
+ * portals are visible, when entered the underground structure comes in
+ * view as well.
+ */
 class Tunnel {
   #portals
   #geometry
 
+  // Construct a tunnel object from deserialized JSON data
   static fromJsonData( data ) {
     return new Tunnel(
       data.color,
@@ -123,7 +140,13 @@ class Tunnel {
   }
 }
 
-/** @template TEntity */
+/** 
+ * Stores entities in a  map by their id. It can be updated by network
+ * packets that are received from the server. Missing ids are inserted
+ * by calling a producer, and superfluous ones are removed from the map.
+ * 
+ * @template TEntity 
+ */
 class EntityMap {
   #map
   #producer
@@ -144,6 +167,8 @@ class EntityMap {
     return this.#map.size
   }
 
+  // Update the entity map from an array sent by the server.
+  // Ignore items specified in the ignore list
   updateFromArray( array, updateFn, ignoreList= [] ) {
     array.forEach( item => {
       if( ignoreList.indexOf(item.id) >= 0 ) {
@@ -172,6 +197,11 @@ class EntityMap {
   }
 }
 
+/**
+ * The playfield shows the game's map and stores all the entities, including
+ * the player mouse. It handles drawing, updating and processing events 
+ * received from the server protocol.
+ */
 export class Playfield {
   #cats
   #mice
@@ -196,6 +226,7 @@ export class Playfield {
     return this.#tunnels
   }
 
+  // Fetch the tunnel data from the server
   async load() {
     const response= await fetch('/map')
     if( !response.ok ) {
@@ -251,14 +282,17 @@ export class Playfield {
     renderer.popState()
   }
 
+  // Get a tunnel that the player can interact with or null
   tunnelInReachOfPlayer() {
     return this.#tunnels.find( tunnel => tunnel.hitboxOverlapsWithPortal( this.#player.hitbox ) ) || null
   }
 
+  // Get a tunnel by its color or null
   tunnelByColor( color ) {
     return this.#tunnels.find( tunnel => tunnel.color === color ) || null
   }
 
+  // Count the number of mice still alive
   countMice() {
     const total= this.#mice.size + 1
     let alive= Game.the().state.isAlive() ? 1 : 0
@@ -268,6 +302,7 @@ export class Playfield {
     return {alive, total}
   }
 
+  // Build and queue network packets to update the player mouse on the server
   sendNetworkPackets() {
     const game= Game.the()
     const protocol= game.connection.protocol
@@ -278,6 +313,7 @@ export class Playfield {
     protocol.sendPlayerUpdate( playerHitbox.x, playerHitbox.y, tunnelColor, voteColor )
   }
 
+  // Handle protocol events updating the mice and cats
   receivedEntitiesMessage( mice, cats ) {
     // Update the mice from the message
     this.#mice.updateFromArray( mice, (item, entity) => {

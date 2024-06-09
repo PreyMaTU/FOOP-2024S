@@ -2,6 +2,13 @@
 import { Protocol } from './public/protocol.js'
 import { Position } from './serverEntity.js'
 
+
+/**
+ * Server sided protocol for communicating with the client. In the beginning
+ * a hello-handshake is performed to establish the connection. The client
+ * send messages to update the player position, and the server regularly
+ * updates the game state/map.
+ */
 export class ServerProtocol extends Protocol {
   #id
   #player
@@ -28,6 +35,7 @@ export class ServerProtocol extends Protocol {
   }
 
   handleIncomingMessage( textMessage ) {
+    // Try to parse the incoming message text as JSON
     let msg= null
     try {
       msg= JSON.parse( textMessage )
@@ -35,7 +43,8 @@ export class ServerProtocol extends Protocol {
       console.error( 'Could not parse JSON message:', textMessage )
       return
     }
-      
+    
+    // Handle different message types
     switch( msg.type ) {
       case 'hello':
         this.sendHelloMessage()
@@ -64,6 +73,8 @@ export class ServerProtocol extends Protocol {
   async waitForConnection() {
     await this._waitForState( ServerProtocol.State.Connected )
   }
+
+  /* Broadcast game data updates to the connected clients */
 
   static broadcastEntityUpdates( connections, mice, cats ) {
     connections.forEach( connection => connection.protocol._sendMessage('entities', {mice, cats}) )

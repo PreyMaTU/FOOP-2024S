@@ -1,6 +1,10 @@
 
 import { abstractMethod, Vector } from './util.js'
 
+/**
+ * Describes the rectangular hitbox of an entity with a position
+ * and extent.
+ */
 export class Hitbox {
   /**
    * @param {number} x 
@@ -21,7 +25,10 @@ export class Hitbox {
   set centerX( x ) { return this.x= x - Math.floor(this.w/2) }
   set centerY( y ) { return this.y= y - Math.floor(this.h/2) }
 
-  /** @param {Hitbox} other */
+  /** 
+   * Check if two Hitboxes overlap
+   * @param {Hitbox} other 
+   */
   overlapsWith( other ) {
     // Hitbox has no area -> no overlap
     if( !this.w || !this.h || !other.w || !other.h ) {
@@ -41,6 +48,7 @@ export class Hitbox {
     return true
   }
 
+  // Forces the position to be inside rectangular bounds
   clampPosition(minLeft, minTop, maxRight, maxBottom) {
     this.x= Math.max( minLeft, Math.min(maxRight- this.w, this.x))
     this.y= Math.max( minTop, Math.min(maxBottom- this.h, this.y))
@@ -51,6 +59,7 @@ export class Hitbox {
     this.y+= y
   }
 
+  // Draws the hitbox as a red bordered rectangle
   draw() {
     const renderer= Game.the().renderer
     renderer.pushState()
@@ -64,6 +73,11 @@ export class Hitbox {
   }
 }
 
+
+/**
+ * Smoothly moves a hitbox from a current position to a set
+ * target position linearly with a set speed.
+ */
 export class LinearSteerer {
   #speed
   #target
@@ -75,6 +89,8 @@ export class LinearSteerer {
   }
 
   /**
+   * Set a new target position
+   * 
    * @param {Hitbox} hitbox
    * @param {number} x
    * @param {number} y
@@ -90,6 +106,9 @@ export class LinearSteerer {
   }
 
   /**
+   * Move the hitbox towards the target position, if one
+   * is currently set.
+   * 
    * @param {Hitbox} hitbox
    * @param {number} timeDelta
    */
@@ -118,6 +137,10 @@ export class LinearSteerer {
   }
 }
 
+/**
+ * Abstract base class for all entities displayed by the game.
+ * This also includes inanimate objects such as tunnels.
+ */
 export class Entity {
   draw() { abstractMethod() }
   update() {}

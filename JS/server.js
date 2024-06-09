@@ -7,6 +7,7 @@ import { ClientConnection } from './connection.js'
 import { Vector, sampleArray, sampleSubArray } from './public/util.js'
 import { playfieldMap } from './playfieldMap.js'
 
+// Enum of allowed game states
 const GameState= {
   Pending: {name: 'pending'},
   Running: {name: 'running'},
@@ -14,6 +15,13 @@ const GameState= {
   Loss: {name: 'loss'}
 }
 
+/**
+ * The main server class. Stores the game's state, entities and client
+ * connections. Handles incoming events processed by the client protocol
+ * and controls the progress of the game. Detects when players (mice) 
+ * are caught by cats, runs the cat AIs and broadcasts game updates.
+ * The server is implemented as a singleton.
+ */
 export class Server {
   #connections
   #players
@@ -27,10 +35,12 @@ export class Server {
     return Server.instance= new Server()
   }
   
+  // Return the instance of the server singleton
   static the() {
     return Server.instance
   }
 
+  // Initialize the game server with two cats
   constructor() {
     this.#connections= []
     this.#players= new Map()
@@ -42,6 +52,7 @@ export class Server {
     this.#startTime= 0
   }
 
+  // Get a random position in the tunnel with least player mice
   pickRandomPositionInsideTunnel() {
     // Count the number of mice in each tunnel
     const tunnelOccupation= {}
@@ -79,10 +90,12 @@ export class Server {
     return { position, tunnel: tunnel.color }
   }
 
+  // Handle player joining the game
   async playerJoined( socket ) {
     const connection= new ClientConnection( socket, new ServerProtocol() )
     this.#connections.push( connection )
 
+    // Spawn player mouse inside a tunnel with least other players
     const { position, tunnel }= this.pickRandomPositionInsideTunnel()
     const player= new Player( position, tunnel, connection )
     connection.onClose= () => this.playerLeft( player )
@@ -92,7 +105,7 @@ export class Server {
     this.#players.set( player.id, player )
     console.log( `Player '${player.id}' joined the game` )
 
-    // Start the game
+    // Start the game after first player joined
     if( this.#state === GameState.Pending ) {
       this.#startTime= Date.now()
       this.#state= GameState.Running
@@ -106,16 +119,20 @@ export class Server {
     }
   }
 
+  // Handle player leaving the game
   playerLeft( player ) {
+    // Remove connection from the array
     const connectionIdx= this.#connections.indexOf( player.connection )
     if( connectionIdx >= 0 ) {
       this.#connections.splice(connectionIdx, 1)
     }
     
+    // Remove the player from the map
     this.#players.delete( player.id )
     console.log(`Player ${player.id} left the game`)
   }
 
+  // Count the votes for each tunnel
   countVotes() {
     const votes= {}
     this.#players.forEach( player => {
@@ -133,6 +150,8 @@ export class Server {
     return votes
   }
 
+  // Update the game timer and broadcast the time every second. When
+  // no time is left the game ends and all player are killed.
   updateGameTime() {
     // Timer stopped
     if( this.#state !== GameState.Running ) {
@@ -153,6 +172,7 @@ export class Server {
     }
   }
 
+  // When winning conditions are met end the game and broadcast to all clients
   detectVictory() {
     if( this.#state !== GameState.Running ) {
       return
@@ -179,12 +199,14 @@ export class Server {
       }
     }
     
+    // At least two players must be alive for the game to be won
     if( alivePlayers >= 2 ) {
       this.#state= GameState.Victory
       ServerProtocol.broadcastVictory( this.#connections )
     }
   }
 
+  // When all players are dead the game ends
   detectLoss() {
     if( this.#state !== GameState.Running ) {
       return
@@ -198,6 +220,7 @@ export class Server {
     }
   }
 
+  // Main update loop
   update() {
     this.#cats.forEach( cat => cat.update() )
 
@@ -220,17 +243,21 @@ export class Server {
     this.#connections.forEach( connection => connection.sendMessages() )
   }
 
+  // Finds the closest player above ground that is still alive with an optional maximum
+  // radius
   findClosestOvergroundAlivePlayer( position, maxDistance= Number.POSITIVE_INFINITY ) {
     const posVec= position.vector()
     let closestPlayer= null
     let closestSquaredDistance= maxDistance* maxDistance
 
+    // Check distance for each player alive and overground
     const mouseHitboxCenterOffset= new Vector( 6, 6 )
     this.#players.forEach( player => {
       if( !player.alive || player.tunnel ) {
         return
       }
 
+      // Calculate distance of current player to given position
       const distance= player.position.vector().add( mouseHitboxCenterOffset ).distanceToSquared( posVec )
       if( distance < closestSquaredDistance ) {
         closestPlayer= player

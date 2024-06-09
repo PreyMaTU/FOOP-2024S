@@ -3,6 +3,11 @@ import { Brain } from "./brain.js"
 import { RunningDirection } from "../public/actors.js"
 import { Position } from "../serverEntity.js"
 
+/**
+ * Simple behavior to let a cat move on a path in the shape of a 
+ * fixed rectangle. It does not actively pursue players and randomly
+ * rests for short times before resuming.
+ */
 export class SquareBrain extends Brain {
   #state
   #initialPosition
@@ -45,6 +50,7 @@ export class SquareBrain extends Brain {
     // -> https://en.wikipedia.org/wiki/Frenetic_random_activity_periods
     const newPosition= position.copy().move( this.#state.vector.scale( this.#speed ) )
 
+    // Change direction of the cat if the corner of the movement-rectangle is reached
     switch( this.#state ) {
       case RunningDirection.Up:
         if( newPosition.y <= this.#initialPosition.y ) {

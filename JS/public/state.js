@@ -1,6 +1,12 @@
 import { abstractMethod } from './util.js'
 import { Colors } from './colors.js'
 
+/**
+ * Abstract base class for game states. A stat is initialized once
+ * when entered and then called every frame to control the game's
+ * behavior. It offers additional query methods to let other components
+ * know how to behave when the state is active.
+ */
 class State {
   frame() { abstractMethod() }
 
@@ -14,6 +20,12 @@ class State {
   isAlive() { return true }
 }
 
+
+/**
+ * Base state for all states that act as on screen menus. Stores
+ * the previous active state and restores it when the menu closes.
+ * Has convenience methods used by other menu states for rendering.
+ */
 class MenuState extends State {
   #previousState
 
@@ -22,6 +34,9 @@ class MenuState extends State {
     this.#previousState= Game.the().state
   }
 
+  // Draw a menu box with content over the game map.
+  // The content is drawn as a two column table with a command
+  // and description.
   drawMenuBox( width, height, title, content= [] ) {
     const renderer= Game.the().renderer
     renderer.pushState()
@@ -62,6 +77,8 @@ class MenuState extends State {
     renderer.popState()
   }
 
+  // Restore the previous state of the game, this closes
+  // the menu
   restorePreviousState() {
     Game.the().changeState( this.#previousState )
   }
@@ -69,6 +86,11 @@ class MenuState extends State {
   isPlayable() { return false }
 }
 
+
+/**
+ * Abstract base class for playable states where the
+ * player can interact with the mouse character.
+ */
 class PlayableState extends State {
   isPlayable() { return true }
 
@@ -76,12 +98,16 @@ class PlayableState extends State {
 }
 
 
-
+/**
+ * The player mouse is overground (no tunnel). Can open pause
+ * menu or end the game.
+ */
 export class OutsideTunnel extends PlayableState {
   frame() {
     const game = Game.the()
     game.playfield.draw()
 
+    // Handle menu key events
     if( game.keyboard.keyIsDown('p') ) {
       game.changeState( new PauseMenu() )
 
@@ -98,11 +124,16 @@ export class OutsideTunnel extends PlayableState {
   }
 }
 
+/**
+ * The player mouse is underground (inside tunnel). Can open pause
+ * menu, end the game or cast a vote for a tunnel color.
+ */
 export class InsideTunnel extends PlayableState {
   frame() {
     const game = Game.the()
     game.playfield.draw()
 
+    // Handle menu key events
     if( game.keyboard.keyIsDown('p') ) {
       game.changeState( new PauseMenu() )
 
@@ -120,6 +151,12 @@ export class InsideTunnel extends PlayableState {
   }
 }
 
+/**
+ * This menu allows casting a vote for a specific tunnel color.
+ * All possible colors are displayed in a circle, by pressing
+ * the number key associated with the color, the color is selected
+ * and highlighted.
+ */
 export class VoteMenu extends MenuState {
   frame() {
     const game = Game.the()
@@ -135,6 +172,7 @@ export class VoteMenu extends MenuState {
 
     const radius= 20
 
+    // Draw a disk with a number inside for each tunnel color
     let angle= 0
     let idx = 1
     for( const tunnel of tunnels ) {
@@ -173,12 +211,16 @@ export class VoteMenu extends MenuState {
 
     renderer.popState()
 
+    // Close the menu
     if( game.keyboard.keyWasPressed('v') ) {
       this.restorePreviousState()
     }
   }
 }
 
+/**
+ * Display a help message with the available controls.
+ */
 export class HelpMenu extends MenuState {
   frame() {
     const game= Game.the()
@@ -192,13 +234,16 @@ export class HelpMenu extends MenuState {
       { command: 'P', description: 'Pause' }
     ])
 
-
+    // Close the menu
     if( game.keyboard.keyWasPressed( 'Escape' ) ) {
       this.restorePreviousState()
     }
   }
 }
 
+/**
+ * Display a menu where the player can quit the game.
+ */
 export class PauseMenu extends MenuState {
   frame() {
     const game= Game.the()
@@ -209,9 +254,11 @@ export class PauseMenu extends MenuState {
       { command: 'Q', description: 'Quit' }
     ])
 
-
+    // Close the menu
     if( game.keyboard.keyIsDown( 'c' ) ) {
       this.restorePreviousState()
+    
+      // Quit the game
     } else if( game.keyboard.keyIsDown('q') ) {
       game.changeState( new GameOver() )
       game.connection.protocol.sendQuitMessage()
@@ -219,6 +266,9 @@ export class PauseMenu extends MenuState {
   }
 }
 
+/**
+ * Shows a static "Game Over" screen when the game is lost
+ */
 export class GameOver extends MenuState {
   init() {
     Game.the().currentTunnel= null
@@ -235,6 +285,9 @@ export class GameOver extends MenuState {
   isAlive() { return false }
 }
 
+/**
+ * Shows a static "Victory" screen when the game is won
+ */
 export class Victory extends MenuState {
   frame() {
     const game= Game.the()

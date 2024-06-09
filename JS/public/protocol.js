@@ -1,6 +1,11 @@
 import { abstractMethod } from './util.js'
 import * as States from './state.js'
 
+/**
+ * Abstract base class for protocols. Has an internal buffer for queuing response
+ * messages and a state value. The state can be updated when a messages is received.
+ * Allows for one consumer to wait for a single state change to occur via a Promise.
+ */
 export class Protocol {
   #sendBuffer
   #state
@@ -17,11 +22,14 @@ export class Protocol {
   get state() { return this.#state }
   set sendBuffer( buffer ) { this.#sendBuffer= buffer }
 
+  // Queue response message
   _sendMessage( type, args= {} ) {
     args.type= type
     this.#sendBuffer.push( JSON.stringify( args ) )
   }
 
+  // Create a promise that resolves when the protocol enters
+  // the specified state
   async _waitForState( expectedState ) {
     if( expectedState === this.#state ) {
       return
@@ -35,6 +43,7 @@ export class Protocol {
     return new Promise( (res, rej) => this.#pendingPromise= {res, rej} )
   }
 
+  // Update the current state
   _setState( newState, value ) {
     if( newState === this.#awaitedState && this.#pendingPromise ) {
       this.#pendingPromise.res( value )
@@ -49,6 +58,12 @@ export class Protocol {
   handleIncomingMessage() { abstractMethod() }
 }
 
+/**
+ * Client sided protocol for communicating with the server. In the beginning
+ * a hello-handshake is performed to establish the connection. The client
+ * send messages to update the player position, and the server regularly
+ * updates the game state/map.
+ */
 export class ClientProtocol extends Protocol {
   #id
 
@@ -69,6 +84,7 @@ export class ClientProtocol extends Protocol {
   }
 
   handleIncomingMessage( textMessage ) {
+    // Try to parse the incoming message text as JSON
     let msg= null
     try {
       msg= JSON.parse( textMessage )
@@ -77,6 +93,7 @@ export class ClientProtocol extends Protocol {
       return
     }
       
+    // Handle different message types
     switch( msg.type ) {
       case 'hello':
         this.#id= msg.id

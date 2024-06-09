@@ -3,7 +3,9 @@ export function abstractMethod() {
   throw Error('Abstract Method');
 }
 
-/** 
+/**
+ * Pick a random item from an array
+ * 
  * @template T
  * @param {T[]} array
  * @return {T}
@@ -13,6 +15,8 @@ export function sampleArray( array ) {
 }
 
 /** 
+ * Pick a slice from an array with a random start index
+ * 
  * @template T
  * @param {T[]} array
  * @param {number} len
@@ -27,8 +31,14 @@ export function sampleSubArray( array, len ) {
   return array.slice( idx, idx+ len )
 }
 
+/**
+ * Immutable 2D vector class. Has convenience methods for basic vector math.
+ */
 export class Vector {
   /** 
+   * Can either act as a copy constructor, or create 
+   * a new vector from two integers or a two item array.
+   * 
    * @param {[number, number] | Vector | number} x
    * @param { number? } y
    */

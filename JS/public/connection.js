@@ -1,4 +1,8 @@
 
+/**
+ * Buffer incoming messages from the server. Uses double buffering so a known set 
+ * of messages can be processed while new ones get stored for the next update cycle.
+ */
 export class Receiver {
   #receiveBuffers
   #receiveBufferIndex
@@ -23,6 +27,13 @@ export class Receiver {
   }
 }
 
+/**
+ * Buffered connection from the client to the server. Messages are not interpreted
+ * by the connection itself, but handed through to a protocol instance, which generates
+ * events for various parts of the game. Incoming messages are held in a double buffer
+ * so every update cycle a defined number of messages get processed synchronously. 
+ * Responses are queued and sent at once every update cycle.
+ */
 export class ServerConnection {
   #url
   #protocol
@@ -42,6 +53,9 @@ export class ServerConnection {
 
   get protocol() { return this.#protocol }
 
+  // Opens a connection to the server web socket and sets up event handler callbacks.
+  // When the connection is established the protocol is begun by sending a hello-
+  // message to the server.
   async open() {
     // Create a promise so we can wait for the websocket and resolve, when it is open
     return new Promise((res, rej) => {
@@ -79,6 +93,7 @@ export class ServerConnection {
     this.#protocol.sendHelloMessage()
   }
 
+  // Put received messages into the receiver buffer
   #handleMessage( event ) {
     this.#receiver.push( event.data )
   }
@@ -87,6 +102,8 @@ export class ServerConnection {
     console.error( 'Websocket error:', event )
   }
 
+  // Wait for the connection to be established, after 'open()' was called. As this method
+  // is used outside the main game loop, events have to pumped manually.
   async waitForConnection() {
     this.frameSendMessagesAndToggleBuffer()
     const messagePump= setInterval( () => this.updateGameFromMessages(), 100 )
@@ -97,10 +114,13 @@ export class ServerConnection {
     }
   }
 
+  // Process the collected messages by ingesting them into the protocol instance
   updateGameFromMessages() {
     this.#receiver.currentBuffer.forEach( textMessage => this.#protocol.handleIncomingMessage( textMessage ) )
   }
 
+  // Send the queued messages to the server and swap the incoming message's buffer.
+  // This needs to be called once every frame.
   frameSendMessagesAndToggleBuffer() {
     // Send all messages in the send buffer and clear the send buffer
     if( this.#socket.readyState === 1 ) {

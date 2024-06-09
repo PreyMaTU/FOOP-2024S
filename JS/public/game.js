@@ -7,14 +7,23 @@ import * as State from './state.js'
 import { ServerConnection } from './connection.js'
 import { ClientProtocol } from './protocol.js'
 
+/**
+ * The main game class. Contains the game's components such as the 
+ * playfield, renderer, connection, ... Has the current state and
+ * runs the game loop every update cycle to update the entities, 
+ * process network messages and render the game to the canvas.
+ * It is implemented as a singleton.
+ */
 class Game {
   static instance= null
 
   static async create() {
+    // Get the HTML5 canvas
     const gameCanvas= document.getElementById('game')
     gameCanvas.width= 320
     gameCanvas.height= 180
 
+    // Load the sprites
     const spriteSheet= new SpriteSheet( '/sprites.png' )
     await spriteSheet.load()
 
@@ -30,6 +39,7 @@ class Game {
     await font.load()
     document.fonts.add(font)
 
+    // Connect to the server
     const connection= new ServerConnection(`ws://${window.location.host}/socket`, new ClientProtocol())
     await connection.open()
     const playerId= await connection.waitForConnection()
@@ -43,6 +53,7 @@ class Game {
     return game
   }
 
+  // Returns the instance of the game singleton
   static the() {
     return Game.instance;
   }
@@ -75,6 +86,8 @@ class Game {
     this.state.init()
   }
 
+  // Do not send network messages every frame but in a regular time
+  // interval
   sendNetworkPackets( timeStamp ) {
     if( timeStamp - this.lastSentPacketTimestamp < 100 ) {
       return
@@ -84,6 +97,7 @@ class Game {
     this.playfield.sendNetworkPackets()
   }
 
+  // Handle protocol event that tunnel color votes changed
   receivedVotesMessage( votes ) {
     if( !this.currentTunnel ) {
       this.tunnelVotes= null
@@ -94,10 +108,12 @@ class Game {
     this.tunnelVotes = votes[this.currentTunnel.color] || null
   }
 
+  // Handle protocol event that timer value changed
   receivedTimeMessage( time ) {
     this.gameTime= time
   }
 
+  // Draws the top bar containing the player count and voting status
   drawTopBar() {
     this.renderer.pushState()
     this.renderer.noStroke()
@@ -111,9 +127,11 @@ class Game {
     this.renderer.drawText( 'Your Vote', 3, 3 )
     this.renderer.drawText( 'Votes', 110, 3 )
 
+    // Draw the number of alive and total players
     const { alive, total } = this.playfield.countMice()
     this.renderer.drawText( `${alive}/${total} Mice Left`, 245, 3 )
 
+    // Draw the current vote of the player
     const ownVoteColor= this.currentVote ? this.currentVote.color : Colors.NoVote
     this.renderer.fillColor= ownVoteColor
     this.renderer.drawCircle( 67, 8, 4 )
@@ -137,6 +155,8 @@ class Game {
     this.renderer.popState()
   }
 
+  
+  // Draws the bottom bar containing the game time and menu hint
   drawBottomBar() {
     this.renderer.pushState()
     this.renderer.noStroke()
@@ -161,6 +181,7 @@ class Game {
     this.renderer.popState()
   }
 
+  // The main game loop
   loop( timeStamp ) {
     // Handle server messages
     this.connection.updateGameFromMessages()
@@ -193,6 +214,7 @@ class Game {
     this.connection.frameSendMessagesAndToggleBuffer()
   }
 
+  // Run the game loop in sync with the window/screen refresh rate
   run() {
     const callback= timeStamp => {
       this.loop( timeStamp )

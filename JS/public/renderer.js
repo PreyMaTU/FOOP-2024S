@@ -1,4 +1,9 @@
 
+/**
+ * Loads and stores the textures of the game from a sprite sheet.
+ * The positions and dimensions of the sprite have to be provided
+ * as a config. Each sprite can then be queried by its name.
+ */
 export class SpriteSheet {
   constructor( url ) {
     this.url= url
@@ -17,6 +22,7 @@ export class SpriteSheet {
     }
   }
 
+  // Set the sprite config with positions and dimensions
   async sprites( config ) {
     for( const name in config ) {
       const {x, y, w, h}= config[name]
@@ -30,7 +36,12 @@ export class SpriteSheet {
   }
 }
 
-/** The Renderer draws the game map elements on the canvas */
+/**
+ * Renders graphical 2D shapes onto a HTML5 canvas. Mostly relies on the
+ * canvas' context 2D functionalities. Offers some additional helper functions
+ * and more coherent interface. It instantiates a SVG filter to create a
+ * pixelated retro game look.
+ */
 export class Renderer {
   #canvas
   #context
@@ -50,7 +61,7 @@ export class Renderer {
     this.enableFilter()
   }
 
-  /** Creates a filter to disable aliasing, ensuring a pixelated look of objects */
+  // Make a SVG filter to disable aliasing, creating a pixelated look when displaying shapes
   #createFilter( filterId ) {
     function createSVGElement( tagName, attributes ) {
       const svgNamespace= 'http://www.w3.org/2000/svg'
@@ -74,6 +85,8 @@ export class Renderer {
     this.#context.filter= enable ? 'url(#remove-alpha)' : 'none'
   }
 
+  // Complete the last drawn shape, but only use fill/stroke commands
+  // when the colors are not transparent (disabled)
   #completePath() {
     if( this.#context.fillStyle !== '#0000' ) {
       this.#context.fill()
@@ -122,12 +135,12 @@ export class Renderer {
     this.#context.textAlign= align
   }
 
-  /** Disabled stroke by setting transparent color */
+  // Disables stroke by setting transparent color
   noStroke() {
     this.#context.strokeStyle= '#0000'
   }
 
-  /** Disabled fill by setting transparent color */
+  // Disables fill by setting transparent color
   noFill() {
     this.#context.fillStyle= '#0000'
   }
@@ -161,7 +174,10 @@ export class Renderer {
     this.#context.scale(-1, 1)
   }
 
-  /** @param {[number, number][]} vertices */
+  /** 
+   * Draws a line successively between the vertices
+   * @param {[number, number][]} vertices 
+   */
   drawPath( vertices ) {
     this.#context.beginPath()
 
