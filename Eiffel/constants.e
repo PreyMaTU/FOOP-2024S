@@ -1,6 +1,6 @@
 note
   description: "Constants to use in multiple places"
-  author: "Stephan Stöger"
+  author: "Stephan Stöger, Philipp Vanek, Matthias Preymann"
   date: "$Date$"
   revision: "$Revision$"
 

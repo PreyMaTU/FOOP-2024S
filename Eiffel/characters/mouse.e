@@ -1,6 +1,6 @@
 note
   description:  "Mouse of the game (Player)"
-  author:       "Stephan Stöger"
+  author:       "Stephan Stöger, Philipp Vanek, Matthias Preymann"
   date:         "$Date$"
   revision:     "$Revision$"
 

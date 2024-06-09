@@ -1,6 +1,6 @@
 note
   description: "Abstract class for cat AI which defines the next move the cat should take"
-  author: "Stephan Stöger"
+  author: "Stephan Stöger, Philipp Vanek, Matthias Preymann"
   date: "$Date$"
   revision: "$Revision$"
 

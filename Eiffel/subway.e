@@ -1,6 +1,6 @@
 note 
   description:  "Subway with multiple exits that mice can go into"
-  author:       "Stephan Stöger"
+  author:       "Stephan Stöger, Philipp Vanek, Matthias Preymann"
   date:         "$Date$"
   revision:     "$Revision$"
 

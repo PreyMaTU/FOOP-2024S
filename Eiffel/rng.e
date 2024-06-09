@@ -1,6 +1,6 @@
 note
   description: "Utility class for pseudo-random number generator"
-  author: "Stephan Stöger"
+  author:      "Stephan Stöger, Philipp Vanek, Matthias Preymann"
   date: "$Date"
   revision: "$Revision$"
 

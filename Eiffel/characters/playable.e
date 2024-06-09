@@ -1,6 +1,6 @@
 note
   description: "Super-class to handle character position etc."
-  author: "Stephan Stöger"
+  author: "Stephan Stöger, Philipp Vanek, Matthias Preymann"
   date: "$Date$"
   revision: "$Revision$"
 

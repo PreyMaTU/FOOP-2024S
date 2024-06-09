@@ -1,6 +1,6 @@
 note
   description: "Gameboard controller class for Cat & Mouse game"
-  author: "Stephan Stöger"
+  author: "Stephan Stöger, Philipp Vanek, Matthias Preymann"
   date: "$Date$"
   revision: "$Revision$"
 

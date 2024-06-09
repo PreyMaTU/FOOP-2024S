@@ -1,6 +1,6 @@
 note
   description: "Simple cat AI brain implementation that allows Cat to track the mouse's last known position"
-  author: "Stephan Stöger"
+  author: "Stephan Stöger, Philipp Vanek, Matthias Preymann"
   date: "$Date$"
   revision: "$Revision$"
 

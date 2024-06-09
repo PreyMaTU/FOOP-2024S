@@ -1,6 +1,6 @@
 note
   description: "NULL Brain implementation for AI-cats. This implementation does nothing, cats using this are stationary"
-  author: "Stephan Stöger"
+  author: "Stephan Stöger, Philipp Vanek, Matthias Preymann"  
   date: "$Date$"
   revision: "$Revision$"
 

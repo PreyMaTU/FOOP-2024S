@@ -1,6 +1,6 @@
 note
   description: "Position wrapper to handle coordinates on playing field"
-  author: "Stephan Stöger"
+  author: "Stephan Stöger, Philipp Vanek, Matthias Preymann"
   date: "$Date$"
   revision: "$Revision$"
 

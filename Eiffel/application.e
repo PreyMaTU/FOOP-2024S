@@ -1,6 +1,6 @@
 note 
   description:  "Main class for Cat-n-mouse in Eiffel"
-  author:       "Stephan Stöger"
+  author:       "Stephan Stöger, Philipp Vanek, Matthias Preymann"
   date:         "$Date$"
   revision:     "$Revision$"
 

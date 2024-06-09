@@ -1,3 +1,10 @@
+note
+  description: "Game class for the Cat & Mouse game that controls the game board"
+  author: "Stephan Stöger, Philipp Vanek, Matthias Preymann"
+  date: "$Date$"
+  revision: "$Revision$"
+
+
 class
   GAME
 

@@ -1,6 +1,6 @@
 note
   description:  "Cat of the game (AI)"
-  author:       "Stephan Stöger"
+  author:       "Stephan Stöger, Philipp Vanek, Matthias Preymann"
   date:         "$Date$"
   revision:     "$Revision$"
 

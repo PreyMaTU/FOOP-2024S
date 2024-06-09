@@ -1,6 +1,6 @@
 note
   description:  "Class used to interface with commandline"
-  author:       "Stephan Stöger"
+  author:       "Stephan Stöger, Philipp Vanek, Matthias Preymann"
   date:         "$Date$"
   revision:     "$Revision$"
 
