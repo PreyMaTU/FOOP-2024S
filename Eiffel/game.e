@@ -19,41 +19,50 @@ feature {NONE}
     do
       create constants
       create board.make (3, 2)
-    end
+    end -- make
 
 feature
   print_board
+  -- print current state of gameboard to screen
     do
       board.print_board
-    end
+    end -- print_board
 
   verify_player: BOOLEAN
+  -- helper to check if player is still alive or has been eaten by catte
     do
       Result := board.is_mouse_alive
-    end
+    end -- verify_player
 
   move_left
+  -- move left one tile
     do
       board.handle_player_move (constants.MOVE_LEFT)
-    end
+    end -- move_left
 
   move_right
+  -- move right one tile
     do
       board.handle_player_move (constants.MOVE_RIGHT)
-    end
+    end -- move_right
 
   move_up
+  -- move up one tile
     do
       board.handle_player_move (constants.MOVE_UP)
-    end
+    end -- move_up
 
   move_down
+  -- move down one tile
     do
       board.handle_player_move (constants.MOVE_DOWN)
-    end
+    end -- move_down
 
   try_enter_subway: BOOLEAN
+  -- attempts to enter subway at player's current position
+  -- does nothing if there is no subway
+  -- if there is a subway, verifies if it was the GOAL subway and returns true if it is
     do
       Result := board.check_and_enter_subway
-    end
-end
+    end -- try_enter_subway
+end -- GAME

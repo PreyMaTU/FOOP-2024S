@@ -16,12 +16,13 @@ create
 feature {NONE}
   make (p: INTEGER)
     do
-    end
+    end -- make
 
 feature
   find_next_move (self_pos, target: POSITION): POSITION
     -- null brain doesn't move
+    -- Caution: Requires extremely skilled player to beat
     do
       Result := self_pos
-    end
-end
+    end -- find_next_move
+end -- NULL_BRAIN

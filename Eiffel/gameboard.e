@@ -198,6 +198,9 @@ feature {NONE}
 
 feature {GAME}
   print_board
+  -- print current state of game to screen
+  -- thinking of this as a "tick" in a gameplay loop, this first updates the CATs
+  -- before printing the (new) current state
     local
       x_idx: INTEGER
       y_idx: INTEGER
@@ -254,7 +257,7 @@ feature {GAME}
 
   handle_mouse_position_change (new_pos: POSITION): BOOLEAN
     -- tests for collision between mouse and cat leading to death of mouse
-    -- as well as if new_pos is atop subway exit to potentially enter.
+    -- might modify mouse (liveliness state)!
     -- if it is atop an exit, this method returns true
     do
       if cats.there_exists (agent check_cats (?, new_pos)) then
@@ -268,6 +271,8 @@ feature {GAME}
     end
 
   handle_player_move (direction: INTEGER)
+  -- handles single-tile move for the player character
+  -- illegal moves like moving out of bounds are ignored
     local
       valid: BOOLEAN
     do
@@ -300,11 +305,15 @@ feature {GAME}
     end
 
   is_mouse_alive: BOOLEAN
+  -- helper to wrap character-specific action
     do
       Result := mice.is_alive
     end
 
   check_and_enter_subway: BOOLEAN
+  -- checks if any subway on the gameboard has an exit at player's current position
+  -- if there is an exit, then enter.
+  -- if it happens to be the GOAL-subway, then return True to signal the game ended in a win
     do
       across subways as s loop
         if s.item.check_exit_at_pos (mice.get_pos) then

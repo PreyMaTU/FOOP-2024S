@@ -24,7 +24,7 @@ feature {NONE}
       create random.make
       sleep_factor := factor
       sleep_count := 0
-    end
+    end -- make
 
 feature
   find_next_move (cat_pos, target_pos: POSITION): POSITION
@@ -93,9 +93,10 @@ feature
           end
         else
           -- illegal move
-          -- should not happen but idk how to raise exception or smth :)
+          -- should not happen but nobody would want an exception!
+          -- CAT will surely find its way back
           create Result.make (-1, -1)
         end -- if-elseif-else
-      end
+      end -- ENDIF !sleeping
     end -- find_next_move
 end -- LAST_POSITION_BRAIN

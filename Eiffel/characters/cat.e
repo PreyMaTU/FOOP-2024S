@@ -20,11 +20,12 @@ feature {NONE}
   init (field_size: INTEGER; brain: BRAIN)
     do
       strategy := brain
-      make (field_size)
+      make (field_size) -- initialize superclass
     end -- init
 
 feature
   perform_move (target: POSITION): POSITION
+  -- let AI find it's next move based on assigned strategy, own position and target position
     do
       Result := strategy.find_next_move (get_pos, target)
     end -- perform_move

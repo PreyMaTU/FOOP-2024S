@@ -17,6 +17,7 @@ feature {NONE}
   is_goal: BOOLEAN
 
   make
+  -- default initialize
     do
       is_goal := false
       create exits.make
@@ -24,7 +25,9 @@ feature {NONE}
     end
 
 feature {GAMEBOARD}
+-- only GAMEBOARD class is allowed to interact with subways
   add_exit (exit: POSITION)
+    -- add single non-void exit to this system's exits
     require
       non_void_param: exit /= Void
     do
@@ -33,22 +36,21 @@ feature {GAMEBOARD}
       one_was_added: exits.count = old exits.count + 1
     end
 
-  set_path
-    do
-
-    end
-
   set_goal
+  -- helper to designate this subway as the goal (win condition)
     do
       is_goal := true
     end
 
   check_is_goal: BOOLEAN
+  -- win-condition-check helper
     do
       Result := is_goal
     end
 
   check_exit_position_nearby (pos: POSITION): BOOLEAN
+  -- helper to verify if there is a subway exit near provided position
+  -- used mainly for generating gameboard to ensure that exits don't clog up in one region of the map
     do
       Result := false
       across exits as e loop
@@ -59,6 +61,8 @@ feature {GAMEBOARD}
     end
   
   check_exit_at_pos (pos: POSITION): BOOLEAN
+  -- verifies if there is an exit directly at the provided position
+  -- used to verify if player has found a subway to potentially enter
     do
       Result := false
       across exits as e loop
@@ -69,6 +73,9 @@ feature {GAMEBOARD}
     end
 
   teleport (old_pos: POSITION): POSITION
+  -- facilitate Eiffel-catnmouse's own version of "moving inside a tunnel": Teleportation!
+  -- allows arbitrary amount of exits to teleport between
+  -- currently in its simplest form simply takes the next (index-based) exit
     local
       idx: INTEGER
     do
