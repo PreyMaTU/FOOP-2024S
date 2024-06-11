@@ -324,11 +324,9 @@ export class Playfield {
         }
 
         // We were teleported into or out of a tunnel
-        if( !!Game.the().currentTunnel !== !!item.tunnel && Game.the().state.isPlayable() ) {
+        if( !this.#player.hasInitialPosition && !!Game.the().currentTunnel !== !!item.tunnel && Game.the().state.isPlayable() ) {
           const tunnel= item.tunnel ? this.tunnelByColor( item.tunnel ) : null
-          this.#player.toggleTunnel( tunnel )
-          this.#player.hitbox.x= item.x
-          this.#player.hitbox.y= item.y
+          this.#player.setInitialPosition( item.x, item.y, tunnel );
         }
         return
       }

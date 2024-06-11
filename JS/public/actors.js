@@ -126,6 +126,24 @@ export class MateMouse extends Mouse {
  * a tunnel the movement is restricted to the tunnel's walls.
  */
 export class PlayerMouse extends Mouse {
+  #hasInitialPosition
+
+  constructor( posX, posY ) {
+    super( posX, posY )
+    this.#hasInitialPosition= false
+  }
+
+  setInitialPosition( x, y, tunnel ) {
+    this.hitbox.x= x
+    this.hitbox.y= y
+    this.toggleTunnel( tunnel )
+    this.#hasInitialPosition= true
+  }
+
+  get hasInitialPosition() {
+    return this.#hasInitialPosition
+  }
+
   update( timeDelta ) {
     
     // Check if the game is still ongoing
