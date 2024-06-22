@@ -1,5 +1,6 @@
 
 import { Position, ServerCat, Player } from './serverEntity.js'
+import { LazyBrain } from './cat_brain/lazyBrain.js'
 import { SquareBrain } from './cat_brain/squareBrain.js'
 import { StalkerBrain } from './cat_brain/stalkerBrain.js'
 import { ServerProtocol } from './protocol.js'
@@ -46,7 +47,8 @@ export class Server {
     this.#players= new Map()
     this.#cats= [
       new ServerCat( new Position( 40, 30 ), new SquareBrain(240, 90, 6, 0.006) ),
-      new ServerCat( new Position( 180, 90 ), new StalkerBrain( 3 ) )
+      new ServerCat( new Position( 180, 90 ), new StalkerBrain( 3 ) ),
+      new ServerCat( new Position( 190, 100 ), new LazyBrain( 3 ) )
     ]
     this.#state= GameState.Pending
     this.#startTime= 0
